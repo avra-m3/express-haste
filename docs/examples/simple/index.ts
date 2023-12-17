@@ -1,20 +1,29 @@
-import express, { json } from "express";
-import * as haste from "../../../src";
-import { Authentication, petHandler, PetSchema } from "./petHandler";
+import express, { json } from 'express';
+import * as haste from '../../../src';
+import {
+  Authentication,
+  petHandler,
+  PetIdInQuery,
+  PetIdInPath,
+  PetSchema,
+  SessionCookie,
+  petGetHandler,
+} from './petHandler';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
-app.use(json())
+app.use(json());
+app.use(cookieParser());
 
-app.post('/pets',
-    haste.requires(PetSchema).in("body"),
-    haste.requires(Authentication),
-    petHandler
-)
+app.post('/pets', haste.requires(PetSchema).in('body'), haste.requires(Authentication), petHandler);
+
+app.get('/pets', haste.requires(SessionCookie), haste.requires(PetIdInQuery), petGetHandler);
+app.get('/pet/:petId', haste.requires(SessionCookie), haste.requires(PetIdInPath), petGetHandler);
 
 haste.document(app, {
-    appTitle: 'MyPets',
-    appVersion: '0.0.1',
+  appTitle: 'MyPets',
+  appVersion: '0.0.1',
 });
 
 export default app;

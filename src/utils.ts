@@ -6,8 +6,8 @@ import { HasteBadRequestType } from "./types";
 import { ZodIssueSchema } from "./schemas";
 
 E.getOrElse(identity)
-export const parseSafe = <T extends ZodSchema>(schema: T): (v: T["_input"]) => Either<ZodError, TypeOf<T>> => flow(
-    E.of<never, T["_input"]>,
+export const parseSafe = <T extends ZodSchema>(schema: T): (v: T["_input"] | unknown) => Either<ZodError, TypeOf<T>> => flow(
+    E.of<never, T["_input"] | unknown>,
     E.tryCatchK(
         E.map((b): TypeOf<T> => schema.parse(b)),
         flow(
@@ -18,6 +18,7 @@ export const parseSafe = <T extends ZodSchema>(schema: T): (v: T["_input"]) => E
             E.getOrElseW(identity),
         )
     ),
+    E.flatten,
 )
 
 export const zodToRfcError = (error: ZodError): HasteBadRequestType => pipe(

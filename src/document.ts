@@ -53,7 +53,7 @@ const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationO
         layer.route.stack.forEach((subOperation: Layer) => improveOperationFromLayer(subOperation, operation))
     }
     if (isHasteOperation(layer.handle)) {
-        operation = mergeDeep(operation, layer.handle.enhancer(operation)) as ZodOpenApiOperationObject
+        operation = mergeDeep(operation, layer.handle._enhancer(operation)) as ZodOpenApiOperationObject
     }
     return operation;
 }
