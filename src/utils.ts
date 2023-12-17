@@ -9,7 +9,7 @@ E.getOrElse(identity)
 export const parseSafe = <T extends ZodSchema>(schema: T): (v: T["_input"]) => Either<ZodError, TypeOf<T>> => flow(
     E.of<never, T["_input"]>,
     E.tryCatchK(
-        (b): TypeOf<T> => schema.parse(b),
+        E.map((b): TypeOf<T> => schema.parse(b)),
         flow(
             E.fromPredicate(
                 (v): v is ZodError => v instanceof ZodError,

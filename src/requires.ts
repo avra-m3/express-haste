@@ -12,9 +12,10 @@ export function requires(schema: ZodSchema): HasteRequiresOperation {
             parseSafe(schema),
             fold(
                 (e) => {
-                    res.json(zodToRfcError(e)).status(400).send()
+                    res.status(400).json(zodToRfcError(e)).send()
                 },
-                () => {
+                (v) => {
+                    req.body = v
                     next();
                 }
             )
