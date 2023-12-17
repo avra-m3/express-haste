@@ -2,16 +2,22 @@
   "ts-node": {
     "files": true
   },
+  "files": [
+    "src/index.ts"
+  ],
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "outDir": "dist",
+    "outDir": "dist/types",
     "inlineSourceMap": true,
     "esModuleInterop": true
   },
+  "include": [
+    "./src/express-internal.d.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

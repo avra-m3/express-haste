@@ -5,7 +5,8 @@ export const HasteOptionSchema = z.object({
     openApiVersion: z.enum(openApiVersions).default(openApiVersions[openApiVersions.length - 1]),
     appTitle: z.string(),
     appVersion: z.string(),
-    docPath: z.string().default('/documentation')
+    docPath: z.string().default('/documentation'),
+    enableSwaggerUI: z.boolean().default(true)
 })
 export const ZodIssueSchema = z.object({
     code: z.string(),

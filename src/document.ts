@@ -2,14 +2,19 @@ import { Express } from "express-serve-static-core";
 import { createDocument, ZodOpenApiResponseObject } from "zod-openapi";
 import { constant, pipe } from "fp-ts/function";
 import { ZodOpenApiOperationObject, ZodOpenApiPathsObject } from "zod-openapi/lib-types/create/document";
-import { Layer, Router } from "express";
+import type { Layer, Router } from "express";
 import { filterMapWithIndex } from "fp-ts/Record";
 import { match } from "fp-ts/boolean";
 import * as O from "fp-ts/Option";
 import { HasteBadRequestSchema, HasteOptionSchema } from "./schemas";
 import { HasteOperation, HasteOptionType } from "./types";
-import swagger from "swagger-ui-express"
 import { mergeDeep } from "./utils";
+import type swaggerType from "swagger-ui-express"
+let swagger: typeof swaggerType | null = null
+try {
+    swagger = require("swagger-ui-express")
+} catch (e) {
+}
 
 
 export const document = (app: Express, options: HasteOptionType) => {
@@ -28,14 +33,16 @@ export const document = (app: Express, options: HasteOptionType) => {
         addRouteToDocument(specification.paths as ZodOpenApiPathsObject, layer)
     })
     const oaiSpec = createDocument(specification)
-    app.get(`/${options.docPath}/openapi.json`, (req, res) => res.json(
+    app.get(`/${ options.docPath }/openapi.json`, (req, res) => res.json(
         oaiSpec
     ).send(200))
-    app.use(docPath, swagger.serve, swagger.setup(oaiSpec));
+    if(swagger && options.enableSwaggerUI){
+        app.use(docPath, swagger.serve, swagger.setup(oaiSpec));
+    }
 }
 
 const addRouteToDocument = (paths: ZodOpenApiPathsObject, layer: Layer) => {
-    if(!layer.route){
+    if (!layer.route) {
         return;
     }
     const { path = "!all", methods } = layer.route

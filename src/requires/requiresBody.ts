@@ -15,7 +15,7 @@ export const bodyRequires = (schema: ZodSchema): HasteRequiresOperation => Objec
     }
 )
 
-    const bodyHandler = (schema: ZodSchema): Handler => (req, res, next) => pipe(
+    const bodyHandler = (schema: ZodSchema): Handler => async (req, res, next) => pipe(
         req.body,
         parseSafe(schema),
         fold(
