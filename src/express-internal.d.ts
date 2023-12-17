@@ -12,7 +12,7 @@ declare module 'express' {
         path?: string,
         params?: string,
         method?: string
-        route: Route
+        route?: Route
         keys: string[]
         regexp?: RegExp
         handle: Handler

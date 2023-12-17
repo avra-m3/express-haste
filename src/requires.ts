@@ -1,21 +1,46 @@
 import { ZodSchema } from "zod";
-import { HasteRequiresOperation } from "./types";
+import { HasteOperation, HasteRequiresOperation, RequireLocations } from "./types";
 import { Handler } from "express";
-import { ZodOpenApiOperationObject } from "zod-openapi/lib-types/create/document";
-import { flow, pipe } from "fp-ts/function";
+import { pipe } from "fp-ts/function";
+import { parseSafe, zodToRfcError } from "./utils";
+import { fold } from "fp-ts/lib/Either";
 
-export function requires(schema: ZodSchema): HasteRequiresOperation{
-    const HasteRequires: HasteRequiresOperation = Object.assign(
-        ((req, res, n) => pipe(
+export function requires(schema: ZodSchema): HasteRequiresOperation {
+    return Object.assign(
+        ((req, res, next) => pipe(
             req.body,
-
-
+            parseSafe(schema),
+            fold(
+                (e) => {
+                    res.json(zodToRfcError(e)).status(400).send()
+                },
+                () => {
+                    next();
+                }
+            )
         )) as Handler,
         {
             hastens: true,
-            enhancer: (o: ZodOpenApiOperationObject) => o,
-            in: (v: string) => HasteRequires,
+            enhancer: getEnhancers(schema)["default"],
+            in(v: RequireLocations) {
+                this.enhancer = getEnhancers(schema)[v]
+                return this as HasteRequiresOperation;
+            },
         }
     )
-    return HasteRequires
 }
+
+const getEnhancers = (schema: ZodSchema): Record<RequireLocations, HasteOperation["enhancer"]> => ({
+    default: (o) => ({
+        parameters: [...(o?.parameters || []), schema]
+    }),
+    body: () => ({
+        requestBody: {
+            content: {
+                'application/json': {
+                    schema: schema,
+                }
+            }
+        }
+    }),
+})

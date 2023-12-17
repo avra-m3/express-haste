@@ -6,14 +6,16 @@ import { Layer, Router } from "express";
 import { filterMapWithIndex } from "fp-ts/Record";
 import { match } from "fp-ts/boolean";
 import * as O from "fp-ts/Option";
-import { HasteOptionSchema, RFCResponseSchema, ZodIssueSchema } from "./schemas";
+import { HasteBadRequestSchema, HasteOptionSchema } from "./schemas";
 import { HasteOperation, HasteOptionType } from "./types";
+import swagger from "swagger-ui-express"
+import { mergeDeep } from "./utils";
 
 
 export const document = (app: Express, options: HasteOptionType) => {
     const router: Router = app._router;
-    const { appTitle, appVersion, openApiVersion } = HasteOptionSchema.parse(options);
-    const documentation = {
+    const { appTitle, appVersion, openApiVersion, docPath } = HasteOptionSchema.parse(options);
+    const specification = {
         openapi: openApiVersion,
         info: {
             title: appTitle,
@@ -23,13 +25,19 @@ export const document = (app: Express, options: HasteOptionType) => {
         paths: {}
     }
     router.stack.forEach((layer) => {
-        addRouteToDocument(spec.paths as ZodOpenApiPathsObject, layer)
+        addRouteToDocument(specification.paths as ZodOpenApiPathsObject, layer)
     })
-    const spec = createDocument(documentation)
-    app.get('/doc')
+    const oaiSpec = createDocument(specification)
+    app.get(`/${options.docPath}/openapi.json`, (req, res) => res.json(
+        oaiSpec
+    ).send(200))
+    app.use(docPath, swagger.serve, swagger.setup(oaiSpec));
 }
 
 const addRouteToDocument = (paths: ZodOpenApiPathsObject, layer: Layer) => {
+    if(!layer.route){
+        return;
+    }
     const { path = "!all", methods } = layer.route
     paths[path] = pipe(methods, filterMapWithIndex(
         (method, value) => pipe(
@@ -42,10 +50,10 @@ const addRouteToDocument = (paths: ZodOpenApiPathsObject, layer: Layer) => {
 
 const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationObject) => {
     if (layer.route) {
-        layer.route.stack.forEach(subOperation => improveOperationFromLayer(subOperation, operation))
+        layer.route.stack.forEach((subOperation: Layer) => improveOperationFromLayer(subOperation, operation))
     }
     if (isHasteOperation(layer.handle)) {
-        Object.assign({}, operation, layer.handle.enhancer(operation))
+        operation = mergeDeep(operation, layer.handle.enhancer(operation)) as ZodOpenApiOperationObject
     }
     return operation;
 }
@@ -76,9 +84,7 @@ const BadRequest: ZodOpenApiResponseObject = {
     description: '400 BAD REQUEST',
     content: {
         'application/json': {
-            schema: RFCResponseSchema.extend({
-                issues: ZodIssueSchema.array()
-            }),
+            schema: HasteBadRequestSchema,
         },
     },
     ref: '400-bad-request',

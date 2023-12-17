@@ -1,7 +1,7 @@
-import { ZodSchema } from "zod";
-import { Handler } from "express";
-import { HasteRequiresOperation } from "./types";
-import { ZodOpenApiOperationObject } from "zod-openapi/lib-types/create/document";
+import { extendZodWithOpenApi } from "zod-openapi";
+import { z } from "zod";
+
+extendZodWithOpenApi(z)
 
 export * from "./document"
 export * from "./requires"

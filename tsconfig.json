@@ -1,9 +1,13 @@
 {
+  "ts-node": {
+    "files": true
+  },
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
     "strict": true,
     "noImplicitAny": true,
+    "strictNullChecks": true,
     "outDir": "dist",
     "inlineSourceMap": true,
     "esModuleInterop": true

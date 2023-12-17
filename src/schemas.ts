@@ -1,12 +1,11 @@
 import { z } from "zod";
-import { openApiVersions } from "zod-openapi/lib-types/openapi";
-import { last } from "fp-ts/Array";
 
+const openApiVersions = ["3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.1.0"] as const
 export const HasteOptionSchema = z.object({
-    openApiVersion: z.enum(openApiVersions).optional().default(openApiVersions[openApiVersions.length - 1]),
+    openApiVersion: z.enum(openApiVersions).default(openApiVersions[openApiVersions.length - 1]),
     appTitle: z.string(),
     appVersion: z.string(),
-    docPath: z.string().optional().default('/documentation')
+    docPath: z.string().default('/documentation')
 })
 export const ZodIssueSchema = z.object({
     code: z.string(),
@@ -32,4 +31,8 @@ export const RFCResponseSchema = z.object({
         example: 400
     }),
     instance: z.string().optional()
+})
+
+export const HasteBadRequestSchema = RFCResponseSchema.extend({
+    issues: ZodIssueSchema.array()
 })
