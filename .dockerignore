@@ -1,0 +1,9 @@
+.vscode
+.idea
+.github
+.buildkite
+.git
+.env
+**/node_modules/*
+coverage/
+dist/

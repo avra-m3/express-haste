@@ -1,0 +1,12 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    "local>renovate/preset:default",
+    "local>renovate/preset:groupAllNonMajor",
+    "local>renovate/preset:npmPreset",
+    "schedule:weekends",
+    ":automergeMinor",
+    ":automergeDigest",
+  ],
+  platformAutomerge: true,
+}
