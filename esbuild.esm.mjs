@@ -10,6 +10,7 @@ await build({
     outdir: './dist/esm',
     sourcemap: true,
     external: [
-        'express'
+        'express',
+        'express-swagger-ui'
     ]
 });

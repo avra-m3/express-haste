@@ -10,6 +10,7 @@ await build({
     outdir: './dist/cjs',
     sourcemap: true,
     external: [
-        'express'
+        'express',
+        'express-swagger-ui'
     ]
 });

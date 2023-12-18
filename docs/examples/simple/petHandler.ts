@@ -1,6 +1,8 @@
 import { RequestHandler } from "express-serve-static-core";
 import { z } from "zod";
+import { extendZodWithOpenApi } from "zod-openapi";
 
+extendZodWithOpenApi(z)
 
 export const PetSchema = z.object({
     type: z.enum(['cat', 'dog']),

@@ -1,4 +1,4 @@
-import { TypeOf, ZodError, ZodSchema } from "zod";
+import { TypeOf, ZodError, ZodIssue, ZodObject, ZodSchema } from "zod";
 import { constant, flow, identity, pipe } from "fp-ts/function";
 import * as E from "fp-ts/Either"
 import { Do, Either, right } from "fp-ts/Either"
@@ -6,20 +6,23 @@ import { HasteBadRequestType } from "./types";
 import { ZodIssueSchema } from "./schemas";
 
 E.getOrElse(identity)
-export const parseSafe = <T extends ZodSchema>(schema: T): (v: T["_input"] | unknown) => Either<ZodError, TypeOf<T>> => flow(
-    E.of<never, T["_input"] | unknown>,
+export const parseSafe = <T extends ZodSchema>(
+  schema: T
+): ((v: T['_input'] | unknown) => Either<ZodError, TypeOf<T>>) =>
+  flow(
+    E.of<never, T['_input'] | unknown>,
     E.tryCatchK(
-        E.map((b): TypeOf<T> => schema.parse(b)),
-        flow(
-            E.fromPredicate(
-                (v): v is ZodError => v instanceof ZodError,
-                () => new ZodError([])
-            ),
-            E.getOrElseW(identity),
-        )
+      E.map((b): TypeOf<T> => schema.parse(b)),
+      flow(
+        E.fromPredicate(
+          (v): v is ZodError => v instanceof Error && 'issues' in v,
+          (e) => new ZodError([{ message: `${e}`, path: [], code: 'custom' }])
+        ),
+        E.getOrElseW(identity)
+      )
     ),
-    E.flatten,
-)
+    E.flatten
+  );
 
 export const zodToRfcError = (error: ZodError): HasteBadRequestType => pipe(
     Do,
@@ -50,7 +53,7 @@ export function mergeDeep(target: Record<string, unknown> | object, ...sources: 
 
     if (isObject(target) && isObject(source)) {
         for (const key in source) {
-            if (isObject(source[key]) && !(source[key] instanceof ZodSchema) && !(target[key] instanceof ZodSchema)) {
+            if (isObject(source[key]) && !isZodType(source[key]) && !isZodType(target[key])) {
                 if (!target[key]) Object.assign(target, { [key]: {} });
                 mergeDeep(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
             } else {
@@ -61,3 +64,5 @@ export function mergeDeep(target: Record<string, unknown> | object, ...sources: 
 
     return mergeDeep(target, ...sources);
 }
+
+export const isZodType = (v: unknown): v is ZodSchema => isObject(v) && '_def' in v

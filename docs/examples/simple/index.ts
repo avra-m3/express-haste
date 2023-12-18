@@ -1,5 +1,5 @@
 import express, { json } from 'express';
-import * as haste from '../../../src';
+import * as haste from 'express-haste';
 import {
   Authentication,
   petHandler,
@@ -24,6 +24,7 @@ app.get('/pet/:petId', haste.requires(SessionCookie), haste.requires(PetIdInPath
 haste.document(app, {
   appTitle: 'MyPets',
   appVersion: '0.0.1',
+  enableSwaggerUI: true
 });
 
 export default app;

@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { extendZodWithOpenApi } from "zod-openapi";
+
+extendZodWithOpenApi(z);
 
 const openApiVersions = ["3.0.0", "3.0.1", "3.0.2", "3.0.3", "3.1.0"] as const
 export const HasteOptionSchema = z.object({
