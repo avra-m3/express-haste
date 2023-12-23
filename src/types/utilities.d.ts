@@ -1,9 +1,7 @@
 import { HasteOperation } from '../requires';
 import { HasteEffect } from './index';
 
-export type MergeEffects<T> = T extends [HasteOperation<infer Effect1>]
-  ? Effect1
-  : T extends [HasteOperation<infer Effect1>, ...infer Rest]
+export type MergeEffects<T> = T extends [HasteOperation<infer Effect1>, ...infer Rest]
     ? MergeTwoEffect<Effect1, MergeEffects<Rest>>
     : {};
 

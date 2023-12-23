@@ -75,7 +75,7 @@ const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationO
   return operation;
 };
 
-const isHasteOperation = (value: Function): value is HasteOperation =>
+const isHasteOperation = (value: Function): value is HasteOperation<any> =>
   '_hastens' in value && value._hastens === true;
 
 const methodsWithoutBody = ['get', 'head', 'options'];

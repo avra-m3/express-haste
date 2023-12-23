@@ -216,10 +216,10 @@ etag@~1.8.1:
   resolved "https://registry.npmjs.org/etag/-/etag-1.8.1.tgz"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
-express-haste@0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/express-haste/-/express-haste-0.0.5.tgz#76504c145504e87006f4e1364a7d1f39c4ff5602"
-  integrity sha512-EEkc0TpCooN5bs0+ztJ5yKjYzxmURd1Fky1v81E2d77PRAVv6QEehHee/l4v/rG+ssz2Vi8tem6MnjQx5FZ+UQ==
+express-haste@0.0.6-alpha1:
+  version "0.0.6-alpha1"
+  resolved "https://registry.yarnpkg.com/express-haste/-/express-haste-0.0.6-alpha1.tgz#be15930e99f280a76aff668df6061dcc564ee724"
+  integrity sha512-ZAR367Tij8JZumsoaU+syGjlEWXyK2UiWm7X/k/5S2a5pvm/4RBUIy2xd5D8X4VyZ/KsZnyX/OgtgN5KDMFWUA==
   dependencies:
     fp-ts "^2.16.1"
     zod "^3.22.4"

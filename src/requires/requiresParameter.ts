@@ -57,7 +57,7 @@ const paramGetters: Record<ParameterLocation, ParamGetter> = {
 };
 
 function parameterEnhancer(
-  this: HasteOperation,
+  this: HasteOperation<any>,
   operation: ZodOpenApiOperationObject
 ): Partial<ZodOpenApiOperationObject> {
   return {
