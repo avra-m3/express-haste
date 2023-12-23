@@ -1,88 +1,63 @@
-import { AnyZodObject, z, ZodSchema, ZodType } from 'zod';
-import { Request } from 'express';
-import { identity, pipe } from 'fp-ts/function';
-import { parseSafe } from '../utils';
-import { flatten, fromNullable, getOrElseW, map } from 'fp-ts/Either';
-import { ParameterLocation } from 'zod-openapi/lib-types/openapi3-ts/dist/model/openapi31';
-import { createHasteOperation, HasteOperation } from './operation';
+import { ZodSchema, ZodType } from 'zod';
+import { constant, pipe } from 'fp-ts/function';
+import { createHasteOperation } from './operation';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
-import { option, record } from 'fp-ts';
+import { either, option } from 'fp-ts';
+import { ZodOpenApiResponseObject } from 'zod-openapi';
+import { StatusCode } from '../types';
 
-export const requiresParameter =
-  <L extends ParameterLocation>(where: L) =>
-  <S extends ZodSchema, K extends string>(key: K, schema: S) =>
-    createHasteOperation(
-      {
-        [where]: {
-          [key]: schema,
-        },
-      },
-      (req) =>
-        pipe(
-          { [where]: { [key]: paramGetters[where](req, key) } },
-          parseSafe(z.object({ [where]: z.object({ [key]: schema }) }))
-        ),
-      parameterEnhancer
-    );
-
-type ParamGetter = (req: Request, name: string) => unknown;
-
-const getHeaderParam: ParamGetter = (req, name) =>
-  pipe(req.headers, (v) => v[name], fromNullable(undefined), getOrElseW(identity));
-
-const getQueryParam: ParamGetter = (req, name) =>
-  pipe(req.query, (v) => v[name], fromNullable(undefined), getOrElseW(identity));
-const getCookieParam: ParamGetter = (req, name) =>
-  pipe(
-    req.cookies,
-    fromNullable(undefined),
-    map((v) => v[name]),
-    fromNullable(undefined),
-    flatten,
-    getOrElseW(identity)
-  );
-
-const getPathParam: ParamGetter = (req, name) =>
-  pipe(req.params, (v) => v[name], fromNullable(undefined), getOrElseW(identity));
-
-const paramGetters: Record<ParameterLocation, ParamGetter> = {
-  path: getPathParam,
-  cookie: getCookieParam,
-  header: getHeaderParam,
-  query: getQueryParam,
+type ResponseOptions = {
+  description?: string;
 };
-
-function parameterEnhancer(
-  this: HasteOperation,
-  operation: ZodOpenApiOperationObject
-): Partial<ZodOpenApiOperationObject> {
-  return {
-    requestParams: pipe(
-      {
-        path: mergeAndMap(this._effects.path, operation.requestParams?.path),
-        cookie: mergeAndMap(this._effects.cookie, operation.requestParams?.cookie),
-        header: mergeAndMap(this._effects.header, operation.requestParams?.header),
-        query: mergeAndMap(this._effects.query, operation.requestParams?.query),
-      },
-      record.filterMap(option.fromNullable)
-    ),
-  };
-}
-
-const mergeAndMap = (
-  newValue: Record<string, ZodType> | undefined,
-  oldValue: AnyZodObject | undefined
+export const requiresResponse = <Status extends StatusCode, Schema extends ZodType>(
+  status: Status,
+  schema: Schema,
+  options?: ResponseOptions
 ) =>
-  pipe(
-    newValue,
-    option.fromNullable,
-    option.map((newSchema) =>
-      pipe(
-        oldValue,
-        option.fromNullable,
-        option.getOrElse(() => z.object({})),
-        (oldSchema) => oldSchema.extend(newSchema)
-      )
-    ),
-    option.getOrElseW(() => undefined)
+  createHasteOperation(
+    {
+      response: [
+        {
+          status,
+          schema,
+        },
+      ] as [{ status: Status; schema: Schema }],
+    },
+    constant(either.right(true)),
+    responseEnhancer(status, schema, options)
   );
+
+const responseEnhancer = <S extends `${1 | 2 | 3 | 4 | 5}${string}`>(
+  status: S,
+  schema: ZodSchema,
+  options?: ResponseOptions
+) =>
+  function responseEnhancer(
+    operation: ZodOpenApiOperationObject
+  ): Partial<ZodOpenApiOperationObject> {
+    return pipe(
+      operation.responses,
+      option.fromNullable,
+      option.map((response) =>
+        option.fromNullable(
+          (response[status] as ZodOpenApiResponseObject)?.content?.['application/json']?.schema as
+            | ZodType
+            | undefined
+        )
+      ),
+      option.flatten,
+      option.getOrElseW(() => undefined),
+      (oldSchema): Partial<ZodOpenApiOperationObject> => ({
+        responses: {
+          [status]: {
+            description: options?.description,
+            content: {
+              'application/json': {
+                schema: oldSchema ? oldSchema.or(schema) : schema,
+              },
+            },
+          },
+        } as Record<S, ZodOpenApiResponseObject>,
+      })
+    );
+  };

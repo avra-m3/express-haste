@@ -10,33 +10,34 @@ import { filterMapWithIndex } from 'fp-ts/Record';
 import { match } from 'fp-ts/boolean';
 import * as O from 'fp-ts/Option';
 import { HasteBadRequestSchema, HasteOptionSchema } from './schemas';
-import { HasteOperation, HasteOptionType } from './types';
+import { HasteOptionType } from './types';
 import { mergeDeep } from './utils';
-import type swaggerType from 'swagger-ui-express';
 import { getRedocHtml } from './redoc';
+import { HasteOperation } from "./requires";
 
 export const document = (app: Express, options: HasteOptionType) => {
   const router: Router = app._router;
-  const { appTitle, appVersion, openApiVersion, docPath } = HasteOptionSchema.parse(options);
+  const { info, openApiVersion, docPath } = HasteOptionSchema.parse(options);
   const specification = {
     openapi: openApiVersion,
-    info: {
-      title: appTitle,
-      version: appVersion,
-    },
-
+    info,
     paths: {},
   };
   router.stack.forEach((layer) => {
     addRouteToDocument(specification.paths as ZodOpenApiPathsObject, layer);
   });
   const oaiSpec = createDocument(specification);
-  app.get(`${docPath}/openapi.json`, (req, res) => res.json(oaiSpec).send());
+  app.get(`${docPath}/openapi.json`, (req, res) => res.status(200).json(oaiSpec));
   app.get(docPath, (req, res) => {
     res
       .contentType('text/html')
       .status(200)
-      .send(getRedocHtml(`${docPath}/openapi.json`));
+      .send(
+        getRedocHtml({
+          title: info.title,
+          apiPath: `${docPath}/openapi.json`,
+        })
+      );
   });
 };
 
@@ -55,7 +56,7 @@ const addRouteToDocument = (paths: ZodOpenApiPathsObject, layer: Layer) => {
         O.map((op) => improveOperationFromLayer(layer, op))
       )
     ),
-    result => Object.assign({}, paths[path] || {}, result)
+    (result) => Object.assign({}, paths[path] || {}, result)
   );
 };
 
@@ -69,7 +70,7 @@ const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationO
     operation = mergeDeep(
       operation,
       layer.handle._enhancer(operation)
-    ) as ZodOpenApiOperationObject;
+    );
   }
   return operation;
 };

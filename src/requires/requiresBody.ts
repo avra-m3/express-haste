@@ -1,34 +1,17 @@
 import { ZodSchema } from 'zod';
-import { HasteRequiresOperation } from '../types';
-import { Handler } from 'express';
+import express from 'express';
 import { pipe } from 'fp-ts/function';
-import { parseSafe, zodToRfcError } from '../utils';
-import { fold } from 'fp-ts/Either';
-import { changeHandler } from './index';
+import { parseSafe } from '../utils';
+import { createHasteOperation } from './operation';
 
-export const bodyRequires = (schema: ZodSchema): HasteRequiresOperation =>
-  Object.assign(bodyHandler(schema), {
-    _hastens: true,
-    _enhancer: bodyEnhancer(schema),
-    in: changeHandler(schema),
-  });
-
-const bodyHandler = (schema: ZodSchema): Handler =>
-  async function handleBody (req, res, next) {
-    return pipe(
-      req.body,
-      parseSafe(schema),
-      fold(
-        (e) => {
-          res.status(400).json(zodToRfcError(e)).send();
-        },
-        (v) => {
-          req.body = v;
-          next();
-        }
-      )
-    );
-  };
+export const requiresBody = <S extends ZodSchema>(schema: S) =>
+  createHasteOperation(
+    {
+      body: schema,
+    },
+    bodyValidator(schema),
+    bodyEnhancer(schema)
+  );
 const bodyEnhancer = (schema: ZodSchema) => () => ({
   requestBody: {
     content: {
@@ -38,3 +21,7 @@ const bodyEnhancer = (schema: ZodSchema) => () => ({
     },
   },
 });
+const bodyValidator = (schema: ZodSchema) => (req: express.Request) => pipe(
+    req.body,
+    parseSafe(schema),
+)

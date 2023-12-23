@@ -9,9 +9,12 @@ A Typescript library that makes documentation, and I/O validation first class pa
 </div>
 <br>
 
-The goal of express-haste is to streamline the development process, freeing developers from having
-to think about api documentation, input/output validation while ensuring all of the above come first
-class with the work you're already doing in express.
+## Why Express-Haste?
+There are many great zod-express integrations that already exist if you're starting a new project.
+Not all of us are so lucky to be starting fresh. Express-Haste aims to be simple to retrofit into
+your existing express project, while minimising developer toil.
+
+Have an idea on how we can do this better? Raise an [issue](https://github.com/avra-m3/express-haste/issues/new/choose).
 
 ## Install
 
@@ -24,9 +27,9 @@ yarn add express express-haste
 ```
 
 ## Usage
-### Validators - `requires`
-The validators are middlewares that ensures you are getting 
-the data you expect. They seamlessly plug into the documentation
+### Validators
+Validators are middlewares that ensure you are getting or responding with
+the data you expect. They seamlessly plug into [document](#documenting---document)
 should you wish to use it.
 
 #### Validating a request body.
@@ -58,7 +61,7 @@ const Authorization = z.string().openapi({
 const app = express();
 app.post('/pets', requires(Authorization), petHandler);
 ```
-### Documenting - `document`
+### Documenting
 Documenting your app is as simple as follows;
 ```typescript
 

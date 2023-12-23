@@ -1,17 +1,15 @@
-import { ZodSchema } from "zod";
-import { HasteRequiresOperation, RequireLocations } from "../types";
-import { requiresParameter } from "./requiresParameter";
-import { bodyRequires } from "./requiresBody";
+import { ZodSchema } from 'zod';
+import { requiresParameter } from './requiresParameter';
+import { requiresBody } from './requiresBody';
 
-export function requires(schema: ZodSchema): HasteRequiresOperation {
-    return requiresParameter(schema)
-}
+export const body = <S extends ZodSchema>(schema: S) => requiresBody(schema);
 
+export const path = requiresParameter('path');
+export const cookie = requiresParameter('cookie');
+export const query = requiresParameter('query');
+export const header = requiresParameter('header');
 
-export const changeHandler = (schema: ZodSchema) => (where: RequireLocations) => handleMapping[where](schema)
+export {requiresResponse as response} from "./requiresResponse"
 
-const handleMapping: Record<RequireLocations, (schema: ZodSchema) => HasteRequiresOperation> = {
-    default: requiresParameter,
-    parameter: requiresParameter,
-    body: bodyRequires
-}
+export * from './operation';
+export * from './requiresMany';

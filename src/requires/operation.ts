@@ -1,20 +1,48 @@
-import { HasteEffect, HasteOperation } from '../types';
+import { HasteEffect } from '../types';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
 import express, { Handler } from 'express';
+import { Either, fold } from 'fp-ts/Either';
+import { ZodError } from 'zod';
+import { pipe } from 'fp-ts/function';
+import { zodToRfcError } from '../utils';
 
-export const createHasteOperation = (
-  effects: HasteEffect,
+export interface HasteOperation<Effects extends HasteEffect> extends Handler {
+  _hastens: boolean;
+  _enhancer: HasteEnhancer;
+  _effects: Effects;
+  _validator: HasteValidator;
+}
+
+export const createHasteOperation = <E extends HasteEffect>(
+  effects: E,
+  validator: HasteValidator,
   enhancer: HasteEnhancer
-): HasteOperation =>
+): HasteOperation<E> =>
   Object.assign(
-    function hasteOperation(req, res, next) {
-      if()
+    function hasteOperation(this: HasteOperation<E>, req, res, next) {
+      pipe(
+        req,
+        this._validator,
+        fold(
+          (e) => {
+            res.status(400).json(zodToRfcError(e)).send();
+          },
+          () => {
+            next();
+          }
+        )
+      );
     } as Handler,
     {
       _hastens: true,
       _enhancer: enhancer,
+      _validator: validator,
       _effects: effects,
     }
   );
 
-type HasteEnhancer = (operation: ZodOpenApiOperationObject) => Partial<ZodOpenApiOperationObject>;
+export type HasteEnhancer = (operation: ZodOpenApiOperationObject) => Partial<ZodOpenApiOperationObject>;
+export type HasteValidator = <H extends HasteOperation<any>>(
+  this: H,
+  req: express.Request
+) => Either<ZodError, unknown>;

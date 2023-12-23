@@ -1,8 +1,9 @@
-export const getRedocHtml = (docPath: string) => `
+export const getRedocHtml = ({ title, apiPath }: { title: string; apiPath: string }) =>
+  `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Redoc</title>
+    <title>{{title}}</title>
     <!-- needed for adaptive design -->
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,8 +20,10 @@ export const getRedocHtml = (docPath: string) => `
     </style>
 </head>
 <body>
-<redoc spec-url='{{API_PATH}}'></redoc>
+<redoc spec-url='{{apiPath}}'></redoc>
 <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
 </body>
 </html>
-`.replace('{{API_PATH}}', docPath)
+`
+    .replace('{{apiPath}}', apiPath)
+    .replace('{{title}}', title);

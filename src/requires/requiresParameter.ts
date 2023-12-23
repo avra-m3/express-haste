@@ -1,49 +1,33 @@
-import { z, ZodSchema } from 'zod';
-import { HasteOperation, HasteRequiresOperation } from '../types';
-import { Handler, Request } from 'express';
-import { changeHandler } from './index';
+import { AnyZodObject, z, ZodSchema, ZodType } from 'zod';
+import { Request } from 'express';
 import { identity, pipe } from 'fp-ts/function';
-import { parseSafe, zodToRfcError } from '../utils';
-import { flatten, fold, fromNullable, getOrElseW, map } from 'fp-ts/Either';
+import { parseSafe } from '../utils';
+import { flatten, fromNullable, getOrElseW, map } from 'fp-ts/Either';
 import { ParameterLocation } from 'zod-openapi/lib-types/openapi3-ts/dist/model/openapi31';
+import { createHasteOperation, HasteOperation } from './operation';
+import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
+import { option, record } from 'fp-ts';
 
-export const requiresParameter = (schema: ZodSchema): HasteRequiresOperation =>
-  Object.assign(parameterHandler(schema), {
-    _hastens: true,
-    _enhancer: parameterEnhancer(schema),
-    in: changeHandler(schema),
-  });
-
-const RequiredOpenapiSchema = z.object({
-  param: z.object({
-    in: z.enum(['path', 'header', 'cookie', 'query'] as const),
-    name: z.string(),
-  }),
-});
-const parameterHandler = (schema: ZodSchema): Handler => {
-  return async function hasteParamHandler(req, res, next) {
-    const { param } = pipe(
-      schema?._def?.openapi,
-      parseSafe(RequiredOpenapiSchema),
-      getOrElseW((e) => {
-        throw e;
-      })
-    );
-    return pipe(
-      { [param.in]: { [param.name]: paramGetters[param.in](req, param.name) } },
-      parseSafe(z.object({ [param.in]: z.object({ [param.name]: schema }) })),
-      fold(
-        (e) => {
-          res.status(400).json(zodToRfcError(e)).send();
+export const requiresParameter =
+  <L extends ParameterLocation>(where: L) =>
+  <S extends ZodSchema, K extends string>(key: K, schema: S) =>
+    createHasteOperation(
+      {
+        [where]: {
+          [key]: schema,
         },
-        (v) => {
-          req.body = v;
-          next();
+      } as {
+        [l in L]: {
+          [k in K]: S
         }
-      )
+      },
+      (req) =>
+        pipe(
+          { [where]: { [key]: paramGetters[where](req, key) } },
+          parseSafe(z.object({ [where]: z.object({ [key]: schema }) }))
+        ),
+      parameterEnhancer
     );
-  };
-};
 
 type ParamGetter = (req: Request, name: string) => unknown;
 
@@ -63,7 +47,7 @@ const getCookieParam: ParamGetter = (req, name) =>
   );
 
 const getPathParam: ParamGetter = (req, name) =>
-  pipe(req.params, v => v[name], fromNullable(undefined), getOrElseW(identity));
+  pipe(req.params, (v) => v[name], fromNullable(undefined), getOrElseW(identity));
 
 const paramGetters: Record<ParameterLocation, ParamGetter> = {
   path: getPathParam,
@@ -72,8 +56,37 @@ const paramGetters: Record<ParameterLocation, ParamGetter> = {
   query: getQueryParam,
 };
 
-const parameterEnhancer =
-  (schema: ZodSchema): HasteOperation['_enhancer'] =>
-  (o) => ({
-    parameters: [...(o?.parameters || []), schema],
-  });
+function parameterEnhancer(
+  this: HasteOperation,
+  operation: ZodOpenApiOperationObject
+): Partial<ZodOpenApiOperationObject> {
+  return {
+    requestParams: pipe(
+      {
+        path: mergeAndMap(this._effects.path, operation.requestParams?.path),
+        cookie: mergeAndMap(this._effects.cookie, operation.requestParams?.cookie),
+        header: mergeAndMap(this._effects.header, operation.requestParams?.header),
+        query: mergeAndMap(this._effects.query, operation.requestParams?.query),
+      },
+      record.filterMap(option.fromNullable)
+    ),
+  };
+}
+
+const mergeAndMap = (
+  newValue: Record<string, ZodType> | undefined,
+  oldValue: AnyZodObject | undefined
+) =>
+  pipe(
+    newValue,
+    option.fromNullable,
+    option.map((newSchema) =>
+      pipe(
+        oldValue,
+        option.fromNullable,
+        option.getOrElse(() => z.object({})),
+        (oldSchema) => oldSchema.extend(newSchema)
+      )
+    ),
+    option.getOrElseW(() => undefined)
+  );

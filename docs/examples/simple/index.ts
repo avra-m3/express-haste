@@ -1,14 +1,13 @@
-import express, { json } from 'express';
-import * as haste from 'express-haste';
 import {
-  Authentication,
-  petHandler,
-  PetIdInQuery,
-  PetIdInPath,
-  PetSchema,
-  SessionCookie,
-  petGetHandler,
+  createPetRequirements,
+  createPetHandler,
+  getOnePetRequirements,
+  getOnePet,
+  searchPetRequirements,
+  searchPets,
 } from './petHandler';
+import express, { json } from 'express';
+import { document } from 'express-haste';
 import cookieParser from 'cookie-parser';
 
 const app = express();
@@ -16,15 +15,16 @@ const app = express();
 app.use(json());
 app.use(cookieParser());
 
-app.post('/pets', haste.requires(PetSchema).in('body'), haste.requires(Authentication), petHandler);
+app.post('/pets', createPetRequirements, createPetHandler);
 
-app.get('/pets', haste.requires(SessionCookie), haste.requires(PetIdInQuery), petGetHandler);
-app.get('/pet/:petId', haste.requires(SessionCookie), haste.requires(PetIdInPath), petGetHandler);
+app.get('/pets', searchPetRequirements, searchPets);
+app.get('/pet/:petId', getOnePetRequirements, getOnePet);
 
-haste.document(app, {
-  appTitle: 'MyPets',
-  appVersion: '0.0.1',
-  enableSwaggerUI: true
+document(app, {
+  info: {
+    title: 'MyPets',
+    version: '0.0.1',
+  },
 });
 
 export default app;

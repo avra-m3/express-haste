@@ -1,50 +1,67 @@
-import { Handler, Request } from 'express';
-import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
-import { z, ZodSchema } from 'zod';
-import { HasteBadRequestSchema, HasteOptionSchema } from './schemas';
+import { Request } from 'express';
+import { z, ZodSchema, ZodType } from 'zod';
+import { HasteBadRequestSchema, HasteOptionSchema } from '../schemas';
 import { RequestHandler } from 'express-serve-static-core';
+import { HasteOperation } from '../requires';
 
-type SingleHasteOperation<
-  S extends ZodSchema = any,
-  L extends HasteLocation = any,
-  K extends string = any,
-> = {
-  _requires: S;
-  _where: L;
-  _key: K;
+export type HasteMappedEffect = 'path' | 'query' | 'header' | 'cookie' | 'responseHeader';
+
+export type StatusCode = `${1 | 2 | 3 | 4 | 5}${string}`;
+export type HasteResponseEffect = { status: StatusCode; schema: ZodSchema };
+
+export type HasteEffect = {
+  body?: ZodSchema;
+  response?: HasteResponseEffect[];
+} & {
+  [E in HasteMappedEffect]?: { [K in string]: ZodSchema };
 };
 
-export interface HasteOperation<
-  Effects extends {
-    body?: ZodSchema;
-    path?: { [PK in string]: ZodSchema };
-    query?: { [QK in string]: ZodSchema };
-    header?: { [HK in string]: ZodSchema };
-    cookie?: { [CK in string]: ZodSchema };
-  } = any,
-> extends Handler {
-  _hastens: boolean;
-  _enhancer: (operation: ZodOpenApiOperationObject) => Partial<ZodOpenApiOperationObject>;
-  _effects: Effects;
-}
+export type SingleHasteEffect<
+  L extends HasteMappedEffect = any,
+  K extends string = any,
+  S extends ZodSchema = any,
+> = Record<L, Record<K, S>>;
 
-export type HasteParamsFor<O extends HasteOperation> = O['_effects']['path'] extends undefined
-  ? Request['params']
-  : {
-      [Key in O['_effects']['path'] as `${Key}`]: z.infer<O['_effects']['path'][Key]>;
-    } & Request['params'];
+type RecurseInfer<T extends HasteResponseEffect[]> = T extends [
+  infer I1 extends HasteResponseEffect,
+  ...infer I2 extends HasteResponseEffect[],
+]
+  ? z.infer<I1['schema']> | RecurseInfer<I2>
+  : T extends [infer I3 extends HasteResponseEffect]
+    ? z.infer<I3['schema']>
+    : never;
 
-export declare abstract class HasteCOperation<
-  Schema extends ZodSchema,
-  Location extends HasteOperation,
-> {
-  readonly _requires: Schema;
-  readonly _where: Location;
+export type HasteResponseFor<O> = O extends HasteOperation<infer Op>
+  ? Op['response'] extends Required<HasteEffect>['response']
+    ? RecurseInfer<Op['response']>
+    : any
+  : any;
 
-  _enhancer(operation: ZodOpenApiOperationObject): ZodOpenApiOperationObject;
-}
+export type HasteParamsFor<O> = O extends HasteOperation<infer Op>
+  ? Op['path'] extends Required<HasteEffect>['path']
+    ? {
+        [Key in keyof Op['path']]: z.infer<Op['path'][Key]>;
+      } & Request['params']
+    : Request['params']
+  : Request['params'];
 
-export type HasteLocation = 'body' | 'cookie' | 'header' | 'query' | 'path';
+export type HasteQueryFor<O> = O extends HasteOperation<infer Op>
+  ? Op['query'] extends Required<HasteEffect>['query']
+    ? {
+        [Key in keyof Op['query']]: z.infer<Op['query'][Key]>;
+      } & Exclude<Request["query"], keyof Op['query']>
+    : Request['query']
+  : Request['query'];
+
+export type HasteRequestHandler<O> = O extends HasteOperation<infer E>
+  ? RequestHandler<
+      HasteParamsFor<O>,
+      HasteResponseFor<O>,
+      E['body'] extends ZodType ? z.infer<E['body']> : any,
+      HasteQueryFor<O>,
+      any
+    >
+  : RequestHandler;
 
 export type HasteOptionType = (typeof HasteOptionSchema)['_input'];
 

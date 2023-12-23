@@ -1,58 +1,65 @@
-import { RequestHandler } from "express-serve-static-core";
-import { z } from "zod";
-import { extendZodWithOpenApi } from "zod-openapi";
+import { z } from 'zod';
+import {
+  body,
+  HasteRequestHandler,
+  path,
+  query,
+  requiresMany,
+  response,
+} from '../../../src';
+import { AsyncCreationRequest, JobAcceptedSchema, PetId, PetSchema, PetWithIdSchema } from "./schemas";
 
-extendZodWithOpenApi(z)
-
-export const PetSchema = z.object({
-    type: z.enum(['cat', 'dog']),
-    breed: z.string()
-})
-export const Authentication = z.string().openapi({
-    param: {
-        in: 'header',
-        name: 'authorization'
-    },
-    ref: 'authentication-header',
-    description: "Some authentication header, you can use zod refinements and transforms to validate."
-})
-export const SessionCookie = z.string().openapi({
-    param: {
-        in: 'cookie',
-        name: 'session'
-    },
-    ref: 'session-cookie',
-    description: "A session cookie"
-})
-
-export const PetIdInQuery = z.string().uuid().openapi({
-    param: {
-        in: 'query',
-        name: 'id'
-    },
-    ref: 'pet-id-query',
-    description: "Pet ID in query params"
-})
-export const PetIdInPath = z.string().uuid().openapi({
-    param: {
-        in: 'path',
-        name: 'petId'
-    },
-    ref: 'pet-id-path',
-    description: "Pet ID in the path"
-})
-
-export const petHandler: RequestHandler<any, any, z.infer<typeof PetSchema>, any, any> = (req, res) => {
+export const searchPetRequirements = requiresMany(
+  query('id', PetId),
+  query('async', AsyncCreationRequest),
+  response('202',  JobAcceptedSchema),
+  response('200',  PetWithIdSchema),
+);
+export const searchPets: HasteRequestHandler<typeof searchPetRequirements> = (req, res) => {
+  if (req.query.async){
+    res.status(202).json({
+      status: 202,
+      title: 'accepted',
+      details: '/job/8b280029-dec0-4b75-9027-2c737a38c8a3'
+    });
+  }
     res.status(200).json({
-        status: 200,
-        title: 'success',
-        details: `${ req.body.type }/breeds/${ req.body.breed }`
-    }).cookie('session', req.cookies.session).send()
-}
-export const petGetHandler: RequestHandler = (req, res) => {
-    res.status(200).json({
-        id: req.params.petId || req.query.id,
-        type: 'cat',
-        breed: 'burmese'
-    }).cookie('session', req.cookies.session).send()
-}
+      id: req.query.id,
+      type: 'cat',
+      breed: 'burmese',
+      vaccinated: true
+    });
+};
+export const getOnePetRequirements = requiresMany(
+  path('id', PetId),
+  response('200', PetWithIdSchema),
+);
+
+export const getOnePet: HasteRequestHandler<typeof getOnePetRequirements> = (
+  req,
+  res
+) => {
+  res.status(200).json({
+    id: req.params.id,
+    type: 'cat',
+    breed: 'burmese',
+    vaccinated: true
+  });
+};
+
+export const createPetRequirements = requiresMany(
+  body(PetSchema),
+  path('id', z.string()),
+  query('async', AsyncCreationRequest),
+);
+
+export const createPetHandler: HasteRequestHandler<typeof createPetRequirements> = (req, res) => {
+  if(req.query)
+  res
+    .status(200)
+    .json({
+      status: 202,
+      title: 'accepted',
+      details: `${req.body.type}/breeds/${req.body.breed}`,
+    });
+};
