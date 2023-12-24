@@ -1,51 +1,45 @@
 import { HasteOperation } from '../requires';
-import { HasteEffect } from './index';
+import { HasteEffect, HasteResponseEffect } from "./index";
 
-export type MergeEffects<T> = T extends [HasteOperation<infer Effect1>, ...infer Rest]
-    ? MergeTwoEffect<Effect1, MergeEffects<Rest>>
+export type ME<T> = T extends [HasteOperation<infer Effect1>, ...infer Rest]
+  ? M2E<Effect1, ME<Rest>>
+  : {};
+
+export type M2E<A, B> = MR<A, B> &
+  MB<A, B> &
+  MAB<'path', A, B> &
+  MAB<'query', A, B> &
+  MAB<'header', A, B> &
+  MAB<'cookie', A, B>;
+
+type MB<A, B> = B extends { body: infer VB }
+  ? {
+      body: VB;
+    }
+  : A extends { body: infer VA }
+    ? {
+        body: VA;
+      }
     : {};
 
-export type MergeTwoEffect<A extends HasteEffect, B extends HasteEffect> = MergeResponse<A, B> &
-  MergeABKey<'path', A, B> &
-  MergeABKey<'query', A, B> &
-  MergeABKey<'header', A, B> &
-  MergeABKey<'cookie', A, B> & MergeBody<A, B>;
-
-type MergeBody<A extends HasteEffect, B extends HasteEffect> = A['body'] extends Required<
-  A['body']
->
-  ? B['body'] extends Required<B['body']>
+type MR<A, B> = A extends { response: infer VA extends [HasteResponseEffect]  }
+  ? B extends { response: infer VB extends [HasteResponseEffect]}
     ? {
-        body: B["body"];
+        response: [...VA, ...VB];
       }
-    : { response: A["body"] }
-  : B['body'] extends NonNullable<infer PB>
-    ? { response: B['body'] }
-    : {};
-type MergeResponse<A extends HasteEffect, B extends HasteEffect> = A['response'] extends Required<
-  A['response']
->
-  ? B['response'] extends Required<B['response']>
-    ? {
-        response: [...A['response'], ...B['response']];
-      }
-    : { response: A['response'] }
-  : B['response'] extends NonNullable<infer PB>
-    ? { response: B['response'] }
+    : { response: VA }
+  :  B extends { response: infer VB extends HasteResponseEffect[]}
+    ? { response: VB }
     : {};
 
-type MergeABKey<
-  K extends keyof HasteEffect,
-  A extends HasteEffect,
-  B extends HasteEffect,
-> = A[K] extends NonNullable<infer PA>
-  ? B[K] extends NonNullable<infer PB>
+type MAB<K extends keyof HasteEffect, A, B> = A extends { [k in K]: infer VA }
+  ? B extends { [k in K]: infer VB }
     ? {
-        [k in K]: SpreadTwo<PA, PB>;
+        [k in K]: SpreadTwo<VA, VB>;
       }
-    : { [k in K]: PA }
-  : B[K] extends NonNullable<infer PB>
-    ? { [k in K]: PB }
+    : { [k in K]: VA }
+  : B extends { [k in K]: infer VB }
+    ? { [k in K]: VB }
     : {};
 
 type OptionalPropertyNames<T> = {
@@ -58,7 +52,7 @@ type SpreadProperties<L, R, K extends keyof L & keyof R> = {
 
 type Id<T> = T extends infer U ? { [K in keyof U]: U[K] } : never;
 
-type SpreadTwo<L, R> = Id<
+export type SpreadTwo<L, R> = Id<
   Pick<L, Exclude<keyof L, keyof R>> &
     Pick<R, Exclude<keyof R, OptionalPropertyNames<R>>> &
     Pick<R, Exclude<OptionalPropertyNames<R>, keyof L>> &

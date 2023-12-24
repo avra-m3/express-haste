@@ -1,9 +1,9 @@
 import { Request } from 'express';
 import { z, ZodSchema, ZodType } from 'zod';
 import { HasteBadRequestSchema, HasteOptionSchema } from '../schemas';
-import { ParamsDictionary, RequestHandler } from "express-serve-static-core";
+import { ParamsDictionary, RequestHandler } from 'express-serve-static-core';
 import { HasteOperation } from '../requires';
-import { ParsedQs } from "qs";
+import { ParsedQs } from 'qs';
 
 export type StatusCode = `${1 | 2 | 3 | 4 | 5}${string}`;
 export type HasteResponseEffect = { status: StatusCode; schema: ZodSchema };
@@ -15,9 +15,9 @@ export type HasteEffect = {
   query?: { [K in string]: ZodSchema };
   header?: { [K in string]: ZodSchema };
   cookie?: { [K in string]: ZodSchema };
-}
+};
 
-type RecurseInfer<T extends HasteResponseEffect[]> = T extends [
+type RecurseInfer<T> = T extends [
   infer I1 extends HasteResponseEffect,
   ...infer I2 extends HasteResponseEffect[],
 ]
@@ -32,28 +32,31 @@ export type HasteResponseFor<E> = E extends HasteEffect
     : any
   : any;
 
-export type HasteParamsFor<E> = E extends HasteEffect
-  ? E['path'] extends NonNullable<E['path']>
-    ? {
-        [Key in keyof E['path']]: z.infer<E['path'][Key]>;
-      }
-    : ParamsDictionary
+export type HasteParamsFor<E> = E extends { [k in string]: ZodSchema }
+  ? {
+      [Key in keyof E]: z.infer<E[Key]>;
+    }
   : ParamsDictionary;
 
-export type HasteQueryFor<E> =E extends HasteEffect
-  ? E['query'] extends NonNullable<E['query']>
-    ? {
-        [Key in keyof E['query']]: z.infer<E['query'][Key]>;
-      } & Exclude<Request['query'], keyof E['query']>
-    : ParsedQs
+export type HasteQueryFor<E> = E extends { [k in string]: ZodSchema }
+  ? {
+      [Key in keyof E]: z.infer<E[Key]>;
+    } & ParsedQs
   : ParsedQs;
+
+interface HasteRequest<E extends HasteEffect> {
+  path: HasteParamsFor<E['path']>;
+  response: HasteResponseFor<E>;
+  body: E['body'] extends ZodType ? z.infer<E['body']> : any;
+  query: HasteQueryFor<E['query']>;
+}
 
 export type HasteRequestHandler<O> = O extends HasteOperation<infer E>
   ? RequestHandler<
-      HasteParamsFor<E>,
-      HasteResponseFor<E>,
-      E['body'] extends ZodType ? z.infer<E['body']> : any,
-      HasteQueryFor<E>,
+      HasteRequest<E>['path'],
+      HasteRequest<E>['response'],
+      HasteRequest<E>['body'],
+      HasteRequest<E>['query'],
       any
     >
   : RequestHandler;

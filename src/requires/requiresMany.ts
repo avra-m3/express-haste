@@ -2,7 +2,7 @@
 import { concatAll, Monoid } from 'fp-ts/Monoid';
 import { HasteEffect } from '../types';
 import { createHasteOperation, HasteOperation } from './operation';
-import { MergeEffects } from '../types/utilities';
+import { ME } from '../types/utilities';
 import { constant, flow, pipe } from 'fp-ts/function';
 import { Applicative, map, separate } from 'fp-ts/Array';
 import express from 'express';
@@ -11,13 +11,15 @@ import { ZodError } from 'zod';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
 import { mergeDeep } from '../utils';
 
-export function requiresMany<H extends HasteOperation<any>[]>(...operations: H) {
+export function requiresMany<H extends [HasteOperation<any>, ...HasteOperation<any>[]]>(
+  ...operations: H
+) {
   return createHasteOperation(
     pipe(
       operations,
       map(({ _effects }) => _effects),
       concatAll(HasteMergeMonoid),
-      (v) => v as MergeEffects<H>
+      (v) => v as ME<H>
     ),
     validateMany(operations),
     enhanceMany(operations)
