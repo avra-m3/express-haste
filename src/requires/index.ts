@@ -10,6 +10,6 @@ export const query = requiresParameter('query');
 export const header = requiresParameter('header');
 
 export {requiresResponse as response} from "./requiresResponse"
+export {requiresMany as requires} from "./requiresMany"
 
 export * from './operation';
-export * from './requiresMany';

@@ -1,12 +1,12 @@
 import { AnyZodObject, z, ZodSchema, ZodType } from 'zod';
-import { Request } from 'express';
+import express, { Request } from 'express';
 import { identity, pipe } from 'fp-ts/function';
 import { parseSafe } from '../utils';
 import { flatten, fromNullable, getOrElseW, map } from 'fp-ts/Either';
 import { ParameterLocation } from 'zod-openapi/lib-types/openapi3-ts/dist/model/openapi31';
 import { createHasteOperation, HasteOperation } from './operation';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
-import { option, record } from 'fp-ts';
+import { either, option, record } from 'fp-ts';
 
 export const requiresParameter =
   <L extends ParameterLocation>(where: L) =>
@@ -18,13 +18,14 @@ export const requiresParameter =
         },
       } as {
         [l in L]: {
-          [k in K]: S
-        }
+          [k in K]: S;
+        };
       },
       (req) =>
         pipe(
           { [where]: { [key]: paramGetters[where](req, key) } },
-          parseSafe(z.object({ [where]: z.object({ [key]: schema }) }))
+          parseSafe(z.object({ [where]: z.object({ [key]: schema }) })),
+          either.map((s) => Object.assign(req[locationRequestMapping[where]] || {}, s[where]))
         ),
       parameterEnhancer
     );
@@ -54,6 +55,13 @@ const paramGetters: Record<ParameterLocation, ParamGetter> = {
   cookie: getCookieParam,
   header: getHeaderParam,
   query: getQueryParam,
+};
+
+const locationRequestMapping: Record<ParameterLocation, keyof express.Request> = {
+  path: 'params',
+  cookie: 'cookies',
+  header: 'headers',
+  query: 'query',
 };
 
 function parameterEnhancer(

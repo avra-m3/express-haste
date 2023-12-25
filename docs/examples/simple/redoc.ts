@@ -1,9 +1,9 @@
-export const getRedocHtml = ({ title, apiPath }: { title: string; apiPath: string }) =>
+export const getRedocHtml = ({ apiPath }: { apiPath: string }) =>
   `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>{{title}}</title>
+    <title>Example Pet App docs</title>
     <!-- needed for adaptive design -->
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,4 +26,3 @@ export const getRedocHtml = ({ title, apiPath }: { title: string; apiPath: strin
 </html>
 `
     .replace('{{apiPath}}', apiPath)
-    .replace('{{title}}', title);

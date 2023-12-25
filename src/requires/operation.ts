@@ -17,9 +17,16 @@ export const createHasteOperation = <E extends HasteEffect>(
   effects: E,
   validator: HasteValidator,
   enhancer: HasteEnhancer
-): HasteOperation<E> =>
-  Object.assign(
-    function hasteOperation(this: HasteOperation<E>, req, res, next) {
+): HasteOperation<E> => {
+  const Operation: Omit<HasteOperation<E>, '()'> = {
+    _hastens: true,
+    _enhancer: enhancer,
+    _validator: validator,
+    _effects: effects,
+  };
+
+  return Object.assign(
+    (<Handler>function (this: HasteOperation<E>, req, res, next) {
       pipe(
         req,
         this._validator,
@@ -32,16 +39,14 @@ export const createHasteOperation = <E extends HasteEffect>(
           }
         )
       );
-    } as Handler,
-    {
-      _hastens: true,
-      _enhancer: enhancer,
-      _validator: validator,
-      _effects: effects,
-    }
+    }).bind(Operation),
+    Operation
   );
+};
 
-export type HasteEnhancer = (operation: ZodOpenApiOperationObject) => Partial<ZodOpenApiOperationObject>;
+export type HasteEnhancer = (
+  operation: ZodOpenApiOperationObject
+) => Partial<ZodOpenApiOperationObject>;
 export type HasteValidator = <H extends HasteOperation<any>>(
   this: H,
   req: express.Request

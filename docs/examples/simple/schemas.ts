@@ -15,7 +15,7 @@ const UsernamePassword = z.tuple([
 ]);
 export const UsernamePasswordAuth = z
   .string()
-  .transform((arg) => UsernamePassword.parse(atob(arg).split(':')))
+  .transform((arg) => UsernamePassword.parse(atob(arg.slice(6)).split(':')))
   .openapi({
     description:
       'A base64 encoded string with the username followed by a colon(:) then a password.',
@@ -30,9 +30,9 @@ export const PetId = z.string().uuid('Must be a valid pet identifier.').openapi(
 });
 
 export const AsyncCreationRequest = z
-  .enum(['true', 'false'])
-  .transform((v) => v === 'true')
+  .enum(['true', 'false', ''])
   .default('false')
+  .transform((v) => v === 'true' || v === '')
   .openapi({
     description: 'Process the creation of this pet async and return a 201 immediately with a jobId',
     example: 'true',

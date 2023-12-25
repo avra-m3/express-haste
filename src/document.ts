@@ -12,12 +12,11 @@ import * as O from 'fp-ts/Option';
 import { HasteBadRequestSchema, HasteOptionSchema } from './schemas';
 import { HasteOptionType } from './types';
 import { mergeDeep } from './utils';
-import { getRedocHtml } from './redoc';
-import { HasteOperation } from "./requires";
+import { HasteOperation } from './requires';
 
 export const document = (app: Express, options: HasteOptionType) => {
   const router: Router = app._router;
-  const { info, openApiVersion, docPath } = HasteOptionSchema.parse(options);
+  const { info, openApiVersion } = HasteOptionSchema.parse(options);
   const specification = {
     openapi: openApiVersion,
     info,
@@ -26,19 +25,7 @@ export const document = (app: Express, options: HasteOptionType) => {
   router.stack.forEach((layer) => {
     addRouteToDocument(specification.paths as ZodOpenApiPathsObject, layer);
   });
-  const oaiSpec = createDocument(specification);
-  app.get(`${docPath}/openapi.json`, (req, res) => res.status(200).json(oaiSpec));
-  app.get(docPath, (req, res) => {
-    res
-      .contentType('text/html')
-      .status(200)
-      .send(
-        getRedocHtml({
-          title: info.title,
-          apiPath: `${docPath}/openapi.json`,
-        })
-      );
-  });
+  return createDocument(specification);
 };
 
 const addRouteToDocument = (paths: ZodOpenApiPathsObject, layer: Layer) => {

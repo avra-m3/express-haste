@@ -29,49 +29,88 @@ yarn add express express-haste
 ## Usage
 ### Validators
 Validators are middlewares that ensure you are getting or responding with
-the data you expect. They seamlessly plug into [document](#documenting---document)
+the data you expect. They seamlessly plug into the [document](#documenting---document) api
 should you wish to use it.
 
-#### Validating a request body.
-Validating your request contains the expected contents is as simple as;
+A simple validated request in an app, looks as follows;
+
 ```typescript
 import express, { json } from 'express';
-import {requires} from 'express-haste';
-import {PetSchema} from './docs/examples/simple/petHandler';
+import { document } from 'express-haste';
+import cookieParser from 'cookie-parser';
+import { requiresMany } from "./requiresMany";
+import { requires, body, query, header } from "./index";
+import { z } from 'zod';
+
 
 const app = express();
-app.post('/pets', requires(PetSchema).in('body'), myHandler);
+
+app.post('/test', requires(
+  body(z.object({})),
+  query('someParam', z.string().default('somevalue')),
+  query('manyparam', z.string().array()),
+  header('x-my-header', z.string().uuid())
+), handler);
 ```
 
-#### Validating a header.
-Validating a header uses the full power of [zod](https://zod.dev/) and [zod-openapi](https://raw.githubusercontent.com/samchungy/zod-openapi)
+
+### Types
+Who doesn't love having a typed application, you can add typing to your request based on the validation you specify, here's an example;
 
 ```typescript
-import express, { json } from 'express';
-import { requires } from 'express-haste';
+import express, { json } from "express";
+import { document } from "express-haste";
+import cookieParser from "cookie-parser";
+import { requiresMany } from "./requiresMany";
+import { requires, body, query, header, HasteRequestHandler } from "./index";
 import { z } from "zod";
 
-const Authorization = z.string().openapi({
-    param: {
-        in: 'header',
-        name: 'authorization'
-    }
-});
 
 const app = express();
-app.post('/pets', requires(Authorization), petHandler);
+
+const testRequirements = requires(
+  body(z.object({ param: z.string().optional() })),
+  query("someParam", z.string().default("somevalue")),
+  query("manyparam", z.string().array()),
+  path("pathid", z.string().transform(z.number().parse)),
+  response(200, z.object({
+    returnValue: z.number()
+  }))
+)
+
+const handler: HasteRequestHandler<typeof testRequirements> = (req, res) => {
+  req.body; // Will be {param?: string}
+  req.query.someParam; // Will be string
+  req.query.someParam; // Will be string[]
+  req.params.pathid; // This will be number (and transformed correctly to number in the request.
+  res.json({
+    // This will be {returnValue: number}
+  });
+};
+
+app.post("/test/:pathid", testRequirements, handler);
 ```
+
 ### Documenting
-Documenting your app is as simple as follows;
+The document api, will automatically pick up the routes currently mounted on your app and return an openapi json object.
+You can then feed this into the openapi provider of your choice to generate documentation.
 ```typescript
 
 import {document} from 'express-haste';
 //... All your routing, it's important these have been finalised before you call document.
-document(app, {
+const spec = document(app, {
     appTitle: 'My First App',
     appVersion: '1.0.0'
 })
+
+// ... Add your /documentation routes using spec.
+
 app.listen(3000, () => {
     console.log('All aboard! http://localhost:3000/documentation')
 })
 ```
+
+
+### More examples
+The best way to understand how something works is to see it in action, check out [the examples](/docs/examples) for 
+full end-to-end examples of how express-haste works.

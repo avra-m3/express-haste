@@ -24,7 +24,6 @@ const ZodApiInfo = z.object({
 export const HasteOptionSchema = z.object({
   openApiVersion: z.enum(openApiVersions).default(openApiVersions[openApiVersions.length - 1]),
   info: ZodApiInfo,
-  docPath: z.string().default('/documentation'),
 });
 export const ZodIssueSchema = z.object({
   code: z.string(),
