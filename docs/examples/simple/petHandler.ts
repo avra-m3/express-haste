@@ -9,7 +9,6 @@ import {
 } from "./schemas";
 
 
-const t =response('200', PetWithIdSchema)
 export const searchPetRequirements = requires(
     query('id', PetId),
     query('async', AsyncCreationRequest),

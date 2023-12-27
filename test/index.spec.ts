@@ -47,7 +47,7 @@ describe('requires', () => {
   });
 
   it('Should return a validation error when cookie is missing', async () => {
-    const result = await request(app)
+    return  request(app)
       .get('/pets?id=123')
       .expect({
         type: 'about:blank',
