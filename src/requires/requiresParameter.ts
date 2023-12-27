@@ -4,9 +4,10 @@ import { identity, pipe } from 'fp-ts/function';
 import { parseSafe } from '../utils';
 import { flatten, fromNullable, getOrElseW, map } from 'fp-ts/Either';
 import { ParameterLocation } from 'zod-openapi/lib-types/openapi3-ts/dist/model/openapi31';
-import { createHasteOperation, HasteOperation } from './operation';
+import { createHasteOperation } from './operation';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
 import { either, option, record } from 'fp-ts';
+import { HasteOperation } from "../types";
 
 export const requiresParameter =
   <L extends ParameterLocation>(where: L) =>

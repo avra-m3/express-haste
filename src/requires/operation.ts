@@ -1,17 +1,8 @@
-import { HasteEffect } from '../types';
-import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
-import express, { Handler } from 'express';
-import { Either, fold } from 'fp-ts/Either';
-import { ZodError } from 'zod';
+import { HasteEffect, HasteEnhancer, HasteOperation, HasteValidator } from '../types';
+import { Handler } from 'express';
+import { fold } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 import { zodToRfcError } from '../utils';
-
-export interface HasteOperation<Effects extends HasteEffect> extends Handler {
-  _hastens: boolean;
-  _enhancer: HasteEnhancer;
-  _effects: Effects;
-  _validator: HasteValidator;
-}
 
 export const createHasteOperation = <E extends HasteEffect>(
   effects: E,
@@ -44,10 +35,3 @@ export const createHasteOperation = <E extends HasteEffect>(
   );
 };
 
-export type HasteEnhancer = (
-  operation: ZodOpenApiOperationObject
-) => Partial<ZodOpenApiOperationObject>;
-export type HasteValidator = <H extends HasteOperation<any>>(
-  this: H,
-  req: express.Request
-) => Either<ZodError, unknown>;

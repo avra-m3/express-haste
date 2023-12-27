@@ -1,11 +1,10 @@
-import { HasteOperation } from '../requires';
-import { HasteEffect, HasteResponseEffect } from "./index";
+import { HasteOperation } from './index';
 
 export type MergeEvery<T> = T extends [HasteOperation<infer E>, ...infer Rest] ?
     DoMerge<E, MergeEvery<Rest>> : T extends [HasteOperation<infer E>] ? E : {};
 
 // This used to be a lot cleaner, but it was slow and for some reason didn't
-// work when I published the package /tableflip
+// work when I published the package /table-flip
 type DoMerge<A, B> =
 // Path
     (A extends { path: infer PA } ? B extends { path: infer PB } ? { path: PA & PB } : {
