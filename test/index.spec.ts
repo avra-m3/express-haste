@@ -1,13 +1,13 @@
 import request from 'supertest';
 import app from '../docs/examples/simple';
-import * as H from "../src"
+import * as H from '../src';
 
-jest.mock('express-haste', () => H)
+jest.mock('express-haste', () => H);
 
 describe('requires', () => {
   it('Should validate the request body', async () => {
     return request(app)
-      .post('/pets')
+      .post('/pets/123')
       .send({
         type: 'fish',
         breed: 'carp',
@@ -21,8 +21,9 @@ describe('requires', () => {
           {
             code: 'invalid_enum_value',
             path: ['type'],
-            message: "Invalid enum value. Expected 'cat' | 'dog', received 'fish'",
+            message: 'Invalid enum value. Expected \'cat\' | \'dog\', received \'fish\'',
           },
+          { code: 'invalid_type', path: ['header', 'authorization'], message: 'Required' },
         ],
       })
       .expect(400);
@@ -35,7 +36,7 @@ describe('requires', () => {
       .send({
         type: 'cat',
         breed: 'tomcat',
-        vaccinated: true
+        vaccinated: true,
       })
       .expect({
         status: 201,
@@ -54,9 +55,9 @@ describe('requires', () => {
         detail: 'Request failed to validate',
         issues: [
           {
-            code: 'invalid_type',
-            path: ['cookie', 'session'],
-            message: 'Required',
+            code: 'invalid_string',
+            path: ['query', 'id'],
+            message: 'Must be a valid pet identifier.',
           },
         ],
       })
@@ -67,25 +68,28 @@ describe('requires', () => {
   it('Should return a validation error when query fails to match schema.', async () => {
     return request(app)
       .get('/pets?id=123')
-      .set('cookie', 'session=eyJqd3QiOiJ...')
       .expect({
         type: 'about:blank',
         title: 'Bad request',
         detail: 'Request failed to validate',
-        issues: [{ code: 'invalid_string', path: ['query', 'id'], message: 'Invalid uuid' }],
-      })
-      .expect(400);
+        issues: [
+          {
+            code: 'invalid_string',
+            path: ['query', 'id'],
+            message: 'Must be a valid pet identifier.',
+          },
+        ],
+      });
   });
 
   it('Should return a validation error when path fails to match schema.', async () => {
     return request(app)
       .get('/pet/123')
-      .set('cookie', 'session=eyJqd3QiOiJ...')
       .expect({
         type: 'about:blank',
         title: 'Bad request',
         detail: 'Request failed to validate',
-        issues: [{ code: 'invalid_string', path: ['path', 'petId'], message: 'Invalid uuid' }],
+        issues: [{ code: 'invalid_string', path: ['path', 'id'], message: 'Must be a valid pet identifier.' }],
       })
       .expect(400);
   });
@@ -93,23 +97,21 @@ describe('requires', () => {
   it('Should let the request through when cookie and query is provided', async () => {
     return request(app)
       .get('/pets?id=16655163-72e9-474a-88c5-1eb866594c08')
-      .set('cookie', 'session=eyJqd3QiOiJ...')
       .send({
         type: 'cat',
         breed: 'tomcat',
       })
-      .expect({ type: 'cat', breed: 'burmese', id: '16655163-72e9-474a-88c5-1eb866594c08' })
+      .expect({ type: 'cat', breed: 'burmese', id: '16655163-72e9-474a-88c5-1eb866594c08', vaccinated: true })
       .expect(200);
   });
   it('Should let the request through when cookie and path is provided', async () => {
     return request(app)
       .get('/pet/16655163-72e9-474a-88c5-1eb866594c08')
-      .set('cookie', 'session=eyJqd3QiOiJ...')
       .send({
         type: 'cat',
         breed: 'tomcat',
       })
-      .expect({ type: 'cat', breed: 'burmese', id: '16655163-72e9-474a-88c5-1eb866594c08' })
+      .expect({ type: 'cat', breed: 'burmese', id: '16655163-72e9-474a-88c5-1eb866594c08', vaccinated: true })
       .expect(200);
   });
 });
