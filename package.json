@@ -1,6 +1,6 @@
 {
   "name": "express-haste",
-  "version": "0.0.6-alpha6",
+  "version": "0.0.6-alpha7",
   "description": "",
   "homepage": "https://github.com/avra-m3/express-haste#readme",
   "bugs": {
@@ -23,7 +23,6 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "start": "ts-node docs/examples/simple/serve.ts",
     "test": "jest",
     "lint": "eslint express-haste",
     "build": "rm -rf ./dist && yarn build:types && node esbuild.esm.mjs && node esbuild.mjs",
