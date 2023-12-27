@@ -1,6 +1,6 @@
 {
   "name": "express-haste",
-  "version": "0.0.6-alpha2",
+  "version": "0.0.6",
   "description": "",
   "homepage": "https://github.com/avra-m3/express-haste#readme",
   "bugs": {
@@ -23,11 +23,10 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "start": "ts-node docs/examples/simple/serve.ts",
     "test": "jest",
     "lint": "eslint express-haste",
     "build": "rm -rf ./dist && yarn build:types && node esbuild.esm.mjs && node esbuild.mjs",
-    "build:types": "tsc --allowJS false --declaration --emitDeclarationOnly --outDir dist/types --project tsconfig.json"
+    "build:types": "tsc --allowJS false --declaration --emitDeclarationOnly --declarationMap --outDir dist/types --project tsconfig.json"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.6",

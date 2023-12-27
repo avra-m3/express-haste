@@ -1,8 +1,8 @@
 // @ts-ignore
 import { concatAll, Monoid } from 'fp-ts/Monoid';
-import { HasteEffect } from '../types';
-import { createHasteOperation, HasteOperation } from './operation';
-import { ME } from '../types/utilities';
+import { HasteEffect, HasteOperation } from '../types';
+import { createHasteOperation } from './operation';
+import { MergeEvery } from '../types';
 import { constant, flow, pipe } from 'fp-ts/function';
 import { Applicative, map, separate } from 'fp-ts/Array';
 import express from 'express';
@@ -11,15 +11,15 @@ import { ZodError } from 'zod';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
 import { mergeDeep } from '../utils';
 
-export function requiresMany<H extends [HasteOperation<any>, ...HasteOperation<any>[]]>(
+export function requiresMany<E, ER, H extends [HasteOperation<E>, ...HasteOperation<ER>[]]>(
   ...operations: H
-) {
+): HasteOperation<MergeEvery<H>> {
   return createHasteOperation(
     pipe(
       operations,
-      map(({ _effects }) => _effects),
+      map(({ _effects }) => _effects as HasteEffect),
       concatAll(HasteMergeMonoid),
-      (v) => v as ME<H>
+      (v) => v as MergeEvery<H>
     ),
     validateMany(operations),
     enhanceMany(operations)

@@ -4,7 +4,7 @@ import { createHasteOperation } from './operation';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
 import { either, option } from 'fp-ts';
 import { ZodOpenApiResponseObject } from 'zod-openapi';
-import { StatusCode } from '../types';
+import { HasteOperation, StatusCode } from '../types';
 
 type ResponseOptions = {
   description?: string;
@@ -13,7 +13,7 @@ export const requiresResponse = <Status extends StatusCode, Schema extends ZodTy
   status: Status,
   schema: Schema,
   options?: ResponseOptions
-) =>
+): HasteOperation<{ response: [{ status: Status; schema: Schema }] }> =>
   createHasteOperation(
     {
       response: [

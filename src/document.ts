@@ -10,9 +10,8 @@ import { filterMapWithIndex } from 'fp-ts/Record';
 import { match } from 'fp-ts/boolean';
 import * as O from 'fp-ts/Option';
 import { HasteBadRequestSchema, HasteOptionSchema } from './schemas';
-import { HasteOptionType } from './types';
+import { HasteOperation, HasteOptionType } from './types';
 import { mergeDeep } from './utils';
-import { HasteOperation } from './requires';
 
 export const document = (app: Express, options: HasteOptionType) => {
   const router: Router = app._router;
