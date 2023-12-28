@@ -25,8 +25,9 @@
   "scripts": {
     "pretest": "yarn lint --quiet",
     "test": "jest",
+    "test:ci": "jest --coverage",
     "lint": "eslint  ./src",
-    "pretty": "prettier ./src",
+    "pretty": "prettier ./src --fix",
     "build": "rm -rf ./dist && yarn build:types && node esbuild.esm.mjs && node esbuild.mjs",
     "build:types": "tsc --allowJS false --declaration --emitDeclarationOnly --declarationMap --outDir dist/types --project tsconfig.json",
     "prepare": "husky install"
