@@ -3,8 +3,4 @@
 
 set -euf
 
-if [ -x "$(command -v nvm)" && -f ".nvmrc" ]; then
-  nvm use
-fi
-
 yarn test

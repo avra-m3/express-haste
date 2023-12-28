@@ -4,7 +4,8 @@
   "main": "index.ts",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node ./serve.ts"
+    "start": "ts-node ./serve.ts",
+    "test": "jest"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
@@ -14,6 +15,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "ts-node": "^10.9.2"
   }
 }
