@@ -1,9 +1,9 @@
-name: Canary Release 🚚
+name: Release 🚀
 
 on:
   release:
     types:
-      - prereleased
+      - released
 
 permissions: {}
 
@@ -12,32 +12,35 @@ jobs:
     name: Version & Publish
     permissions:
       contents: write
+      pull-requests: write
       id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version: 18.x
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Create Beta Branch
+      - name: Create Release Branch
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git checkout -b canary
-          git push --force origin canary --set-upstream
+          git checkout -b release
+          git push --force origin release --set-upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Version Package
-        run: yarn version --new-version ${{ github.event.release.tag_name }}
+        run: npm version ${{ github.event.release.tag_name }} --git-tag-version=false
 
       - name: Push package.json and tags
         run: |
@@ -52,9 +55,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FILE_TO_COMMIT: package.json
-          DESTINATION_BRANCH: canary
+          DESTINATION_BRANCH: release
+
+      - name: Raise Release PR
+        run: |
+          gh pr create -H release -B master --title "Release ${{ github.event.release.tag_name }}" --body "Please merge this with a Merge Request to update master<br><br>[${{ github.event.release.tag_name }}](${{ github.event.release.html_url }})<br><br>${{ github.event.release.body }}" -l "chore"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to npm
-        run: yarn build && npm publish --provenance --tag canary
+        run: yarn build && npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
