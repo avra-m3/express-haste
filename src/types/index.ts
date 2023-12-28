@@ -28,8 +28,8 @@ type RecurseInfer<T> = T extends [
 export type HasteResponseFor<E> = E extends HasteEffect
   ? E extends { response: infer R }
     ? RecurseInfer<R>
-    : any
-  : any;
+    : unknown
+  : unknown;
 
 export type HasteParamsFor<E> = E extends { [k in string]: ZodSchema }
   ? {
@@ -46,8 +46,8 @@ export type HasteQueryFor<E> = E extends { [k in string]: ZodSchema }
 export type HasteRequestHandler<O> = O extends HasteOperation<infer E>
   ? RequestHandler<
       E extends { path: infer P } ? HasteParamsFor<P> : ParamsDictionary,
-      E extends { response: Array<{ schema: infer S extends ZodType }> } ? z.infer<S> : any,
-      E extends { body: infer B extends ZodType } ? z.infer<B> : any,
+      E extends { response: Array<{ schema: infer S extends ZodType }> } ? z.infer<S> : unknown,
+      E extends { body: infer B extends ZodType } ? z.infer<B> : unknown,
       E extends { query: infer Q } ? HasteQueryFor<Q> : ParsedQs
     >
   : RequestHandler;

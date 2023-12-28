@@ -66,7 +66,7 @@ const locationRequestMapping: Record<ParameterLocation, keyof express.Request> =
 };
 
 function parameterEnhancer(
-  this: HasteOperation<any>,
+  this: HasteOperation,
   operation: ZodOpenApiOperationObject
 ): Partial<ZodOpenApiOperationObject> {
   return {

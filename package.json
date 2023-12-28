@@ -23,9 +23,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "pretest": "yarn lint & yarn pretty -c",
+    "pretest": "yarn lint --quiet",
     "test": "jest",
-    "lint": "eslint ./src",
+    "lint": "eslint  ./src",
     "pretty": "prettier ./src",
     "build": "rm -rf ./dist && yarn build:types && node esbuild.esm.mjs && node esbuild.mjs",
     "build:types": "tsc --allowJS false --declaration --emitDeclarationOnly --declarationMap --outDir dist/types --project tsconfig.json",

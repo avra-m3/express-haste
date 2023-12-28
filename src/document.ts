@@ -5,7 +5,7 @@ import {
   ZodOpenApiOperationObject,
   ZodOpenApiPathsObject,
 } from 'zod-openapi/lib-types/create/document';
-import type { Layer, Router } from 'express';
+import express, { Layer, Router } from 'express';
 import { filterMapWithIndex } from 'fp-ts/Record';
 import { match } from 'fp-ts/boolean';
 import * as O from 'fp-ts/Option';
@@ -58,7 +58,7 @@ const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationO
   return operation;
 };
 
-const isHasteOperation = (value: Function): value is HasteOperation<any> =>
+const isHasteOperation = (value: express.Handler): value is HasteOperation =>
   '_hastens' in value && value._hastens === true;
 
 const methodsWithoutBody = ['get', 'head', 'options'];

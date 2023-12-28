@@ -2,9 +2,8 @@ import { TypeOf, ZodError, ZodIssue, ZodSchema, ZodType } from 'zod';
 import { constant, flow, identity, pipe } from 'fp-ts/function';
 import * as E from 'fp-ts/Either';
 import { Do, Either, right } from 'fp-ts/Either';
-import { HasteBadRequestType } from './types';
+import { HasteBadRequestType, UnionToIntersection } from './types';
 import { ZodIssueSchema } from './schemas';
-import { array } from 'fp-ts';
 
 export const parseSafe = <T extends ZodSchema>(
   schema: T
@@ -75,19 +74,19 @@ export function isObject(item: unknown): item is Record<string, unknown> {
  * @param target
  * @param sources
  */
-export function mergeDeep<A, B extends Array<any>>(
+export function mergeDeep<A, B extends Array<unknown>>(
   target: A,
   ...sources: B
-): B extends Array<infer C> ? C & A : A {
+): B extends Array<infer C> ? UnionToIntersection<C> & A : A {
   if (!sources.length) {
-    return target as A & B[0];
+    return target as B extends Array<infer C> ? UnionToIntersection<C> & A : A;
   }
   const source = sources.shift();
 
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
       let targetKey = target[key];
-      let sourceKey = source[key];
+      const sourceKey = source[key];
 
       if (isObject(sourceKey) && !isZodType(sourceKey) && !isZodType(targetKey)) {
         if (!targetKey) {
