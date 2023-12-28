@@ -25,11 +25,14 @@ jobs:
       - name: "Install dependencies ⚙️"
         run: yarn install --frozen-lockfile
 
-      - name: "Test 🧪"
-        run: yarn test:ci
+      - name: "Install dependencies for examples ⚙️"
+        run: yarn install --frozen-lockfile --cwd docs/examples/simple
 
       - name: "Lint 🔎"
         run: yarn lint
+
+      - name: "Test 🧪"
+        run: yarn test:ci
 
       - name: "Build 🔨"
         run: yarn build
