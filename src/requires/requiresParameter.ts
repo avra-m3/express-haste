@@ -11,25 +11,25 @@ import { HasteOperation } from '../types';
 
 export const requiresParameter =
   <L extends ParameterLocation>(where: L) =>
-    <S extends ZodSchema, K extends string>(key: K, schema: S) =>
-      createHasteOperation(
-        {
-          [where]: {
-            [key]: schema,
-          },
-        } as {
-          [l in L]: {
-            [k in K]: S;
-          };
+  <S extends ZodSchema, K extends string>(key: K, schema: S) =>
+    createHasteOperation(
+      {
+        [where]: {
+          [key]: schema,
         },
-        (req) =>
-          pipe(
-            { [where]: { [key]: paramGetters[where](req, key) } },
-            parseSafe(z.object({ [where]: z.object({ [key]: schema }) })),
-            either.map((s) => Object.assign(req[locationRequestMapping[where]] || {}, s[where])),
-          ),
-        parameterEnhancer,
-      );
+      } as {
+        [l in L]: {
+          [k in K]: S;
+        };
+      },
+      (req) =>
+        pipe(
+          { [where]: { [key]: paramGetters[where](req, key) } },
+          parseSafe(z.object({ [where]: z.object({ [key]: schema }) })),
+          either.map((s) => Object.assign(req[locationRequestMapping[where]] || {}, s[where]))
+        ),
+      parameterEnhancer
+    );
 
 type ParamGetter = (req: Request, name: string) => unknown;
 
@@ -45,7 +45,7 @@ const getCookieParam: ParamGetter = (req, name) =>
     map((v) => v[name]),
     fromNullable(undefined),
     flatten,
-    getOrElseW(identity),
+    getOrElseW(identity)
   );
 
 const getPathParam: ParamGetter = (req, name) =>
@@ -67,7 +67,7 @@ const locationRequestMapping: Record<ParameterLocation, keyof express.Request> =
 
 function parameterEnhancer(
   this: HasteOperation<any>,
-  operation: ZodOpenApiOperationObject,
+  operation: ZodOpenApiOperationObject
 ): Partial<ZodOpenApiOperationObject> {
   return {
     requestParams: pipe(
@@ -77,14 +77,14 @@ function parameterEnhancer(
         header: mergeAndMap(this._effects.header, operation.requestParams?.header),
         query: mergeAndMap(this._effects.query, operation.requestParams?.query),
       },
-      record.filterMap(option.fromNullable),
+      record.filterMap(option.fromNullable)
     ),
   };
 }
 
 const mergeAndMap = (
   newValue: Record<string, ZodType> | undefined,
-  oldValue: AnyZodObject | undefined,
+  oldValue: AnyZodObject | undefined
 ) =>
   pipe(
     newValue,
@@ -94,8 +94,8 @@ const mergeAndMap = (
         oldValue,
         option.fromNullable,
         option.getOrElse(() => z.object({})),
-        (oldSchema) => oldSchema.extend(newSchema),
-      ),
+        (oldSchema) => oldSchema.extend(newSchema)
+      )
     ),
-    option.getOrElseW(() => undefined),
+    option.getOrElseW(() => undefined)
   );

@@ -11,9 +11,9 @@ export interface HasteOperation<Effects> extends Handler {
 }
 
 export type HasteEnhancer = (
-  operation: ZodOpenApiOperationObject,
+  operation: ZodOpenApiOperationObject
 ) => Partial<ZodOpenApiOperationObject>;
 export type HasteValidator = <H extends HasteOperation<any>>(
   this: H,
-  req: express.Request,
+  req: express.Request
 ) => Either<ZodError, unknown>;

@@ -10,7 +10,7 @@ export const requiresBody = <S extends ZodSchema>(schema: S) =>
       body: schema,
     },
     bodyValidator(schema),
-    bodyEnhancer(schema),
+    bodyEnhancer(schema)
   );
 const bodyEnhancer = (schema: ZodSchema) => () => ({
   requestBody: {
@@ -21,7 +21,5 @@ const bodyEnhancer = (schema: ZodSchema) => () => ({
     },
   },
 });
-const bodyValidator = (schema: ZodSchema) => (req: express.Request) => pipe(
-  { body: req.body },
-  parseSafe(z.object({ body: schema })),
-);
+const bodyValidator = (schema: ZodSchema) => (req: express.Request) =>
+  pipe({ body: req.body }, parseSafe(z.object({ body: schema })));

@@ -1,7 +1,6 @@
 import { Handler } from 'express';
 
 declare module 'express' {
-
   export interface Route {
     path?: string;
     stack: Layer[];
@@ -9,14 +8,14 @@ declare module 'express' {
   }
 
   export interface Layer {
-    name?: string,
-    path?: string,
-    params?: string,
-    method?: string
-    route?: Route
-    keys: string[]
-    regexp?: RegExp
-    handle: Handler
+    name?: string;
+    path?: string;
+    params?: string;
+    method?: string;
+    route?: Route;
+    keys: string[];
+    regexp?: RegExp;
+    handle: Handler;
   }
 
   export interface Router {

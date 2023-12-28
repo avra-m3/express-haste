@@ -10,15 +10,21 @@ const ZodApiInfo = z.object({
   description: z.string().optional(),
   termsOfService: z.string().optional(),
   version: z.string(),
-  contact: z.object({
-    name: z.string(),
-    url: z.string(),
-    email: z.string(),
-  }).passthrough().optional(),
-  license: z.object({
-    name: z.string(),
-    url: z.string(),
-  }).passthrough().optional(),
+  contact: z
+    .object({
+      name: z.string(),
+      url: z.string(),
+      email: z.string(),
+    })
+    .passthrough()
+    .optional(),
+  license: z
+    .object({
+      name: z.string(),
+      url: z.string(),
+    })
+    .passthrough()
+    .optional(),
 });
 
 export const HasteOptionSchema = z.object({
@@ -33,16 +39,20 @@ export const ZodIssueSchema = z.object({
   code: z.string().optional().openapi({
     description: 'A zod issue code, indicating what went wrong.',
   }),
-  path: z.string().array().optional().openapi({
-    description: 'A path/array pointing to the location of the problem.',
-    examples: [
-      ['body', 'key of body'],
-      ['query', 'key of query'],
-      ['header', 'key of header'],
-      ['cookie', 'key of cookie'],
-      ['path', 'key of path'],
-    ],
-  }),
+  path: z
+    .string()
+    .array()
+    .optional()
+    .openapi({
+      description: 'A path/array pointing to the location of the problem.',
+      examples: [
+        ['body', 'key of body'],
+        ['query', 'key of query'],
+        ['header', 'key of header'],
+        ['cookie', 'key of cookie'],
+        ['path', 'key of path'],
+      ],
+    }),
   message: z.string().openapi({
     description: 'A human-readable description pointing to the source of the problem',
   }),

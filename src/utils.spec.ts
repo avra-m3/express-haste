@@ -18,13 +18,19 @@ describe('utils.ts', () => {
       const input = 123;
       const result = parseSafe(schema)(input);
       expect(E.isLeft(result)).toBe(true);
-      expect(result).toEqual(E.left(new ZodError([{
-        code: 'invalid_type',
-        expected: 'string',
-        received: 'number',
-        path: [],
-        message: 'Expected string, received number',
-      }])));
+      expect(result).toEqual(
+        E.left(
+          new ZodError([
+            {
+              code: 'invalid_type',
+              expected: 'string',
+              received: 'number',
+              path: [],
+              message: 'Expected string, received number',
+            },
+          ])
+        )
+      );
     });
   });
 
@@ -46,12 +52,14 @@ describe('utils.ts', () => {
         type: 'about:blank',
         title: 'Bad request',
         detail: 'Request failed to validate',
-        issues: [{
-          type: 'https://zod.dev/error_handling?id=zodissuecode',
-          code: 'invalid_type',
-          path: [],
-          message: 'Expected string, received number',
-        }],
+        issues: [
+          {
+            type: 'https://zod.dev/error_handling?id=zodissuecode',
+            code: 'invalid_type',
+            path: [],
+            message: 'Expected string, received number',
+          },
+        ],
       };
 
       // test assertion
@@ -73,12 +81,14 @@ describe('utils.ts', () => {
         type: 'about:blank',
         title: 'Bad request',
         detail: 'Request failed to validate',
-        issues: [{
-          type: 'about:blank',
-          code: 'custom',
-          message: 'No information available',
-          path: [],
-        }],
+        issues: [
+          {
+            type: 'about:blank',
+            code: 'custom',
+            message: 'No information available',
+            path: [],
+          },
+        ],
       };
       // test assertion
 
@@ -111,7 +121,6 @@ describe('utils.ts', () => {
       expect(isObject(testArray)).toBeFalsy();
     });
   });
-
 
   describe('mergeDeep', () => {
     it('should merge two naive objects deeply', () => {
@@ -156,5 +165,4 @@ describe('utils.ts', () => {
       expect(result).toEqual(obj2);
     });
   });
-
 });

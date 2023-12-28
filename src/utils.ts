@@ -7,7 +7,7 @@ import { ZodIssueSchema } from './schemas';
 import { array } from 'fp-ts';
 
 export const parseSafe = <T extends ZodSchema>(
-  schema: T,
+  schema: T
 ): ((v: T['_input'] | unknown) => Either<ZodError, TypeOf<T>>) =>
   flow(
     E.of<never, T['_input'] | unknown>,
@@ -16,12 +16,12 @@ export const parseSafe = <T extends ZodSchema>(
       flow(
         E.fromPredicate(
           (v): v is ZodError => v instanceof Error && 'issues' in v,
-          (e) => new ZodError([{ message: `${ e }`, path: [], code: 'custom' }]),
+          (e) => new ZodError([{ message: `${e}`, path: [], code: 'custom' }])
         ),
-        E.getOrElseW(identity),
-      ),
+        E.getOrElseW(identity)
+      )
     ),
-    E.flatten,
+    E.flatten
   );
 
 /**
@@ -36,26 +36,30 @@ export const zodToRfcError = (error: { issues: ZodIssue[] }): HasteBadRequestTyp
     E.bind('detail', constant(right('Request failed to validate'))),
     E.bind('issues', constant(decomposeZodIssues(error.issues))),
     E.getOrElse((e) => {
-      console.warn(`parsed a zod issue failing type or property checks, please raise an issue in express-haste with the following error; ${ e }`);
-      return ({
+      console.warn(
+        `parsed a zod issue failing type or property checks, please raise an issue in express-haste with the following error; ${e}`
+      );
+      return {
         type: 'about:blank',
         title: 'Bad request',
         detail: 'Request failed to validate',
-        issues: [{
-          type: 'about:blank',
-          code: 'custom',
-          path: [],
-          message: 'No information available',
-        }],
-      } as HasteBadRequestType);
-    }),
+        issues: [
+          {
+            type: 'about:blank',
+            code: 'custom',
+            path: [],
+            message: 'No information available',
+          },
+        ],
+      } as HasteBadRequestType;
+    })
   );
 
-
-const decomposeZodIssues = (issues: ZodIssue[]) => pipe(
-  issues.map(v => ({ type: 'https://zod.dev/error_handling?id=zodissuecode', ...v })),
-  parseSafe(ZodIssueSchema.array()),
-);
+const decomposeZodIssues = (issues: ZodIssue[]) =>
+  pipe(
+    issues.map((v) => ({ type: 'https://zod.dev/error_handling?id=zodissuecode', ...v })),
+    parseSafe(ZodIssueSchema.array())
+  );
 
 /**
  * Simple object check.
@@ -79,7 +83,6 @@ export function mergeDeep<A, B extends Array<any>>(
     return target as A & B[0];
   }
   const source = sources.shift();
-
 
   if (isObject(target) && isObject(source)) {
     for (const key in source) {

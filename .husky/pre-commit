@@ -1,4 +1,10 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+set -euf
+
+if [ -x "$(command -v nvm)" && -f ".nvmrc" ]; then
+  nvm use
+fi
+
 yarn test
