@@ -10,6 +10,9 @@
     "type": "git",
     "url": "git+ssh://git@github.com/avra-m3/express-haste.git"
   },
+  "engines": {
+    "node": ">=16.11"
+  },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",

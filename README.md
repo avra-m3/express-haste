@@ -5,6 +5,12 @@
 A Typescript library that makes documentation, and I/O validation first class passengers in expressJS
 </p>
 <div align="center">
+<a href="https://github.com/avra-m3/express-haste/actions/workflows/test.yml">
+<img src="https://github.com/avra-m3/express-haste/actions/workflows/test.yml/badge.svg" alt="Test Status"/>
+</a>
+<a href="https://github.com/avra-m3/express-haste/actions/workflows/release.yml">
+<img src="https://github.com/avra-m3/express-haste/actions/workflows/release.yml/badge.svg" alt="Release Status"/>
+</a>
 </div>
 <br>
 
@@ -77,18 +83,21 @@ or similar for this to work.
 *and [.refine](https://zod.dev/?id=refine) to abstract validation logic.*
 
 #### `query(key, schema)`
+
 Given a key and a Schema, validate a search/query parameter meets that validation, valid starting types are
+
 - `z.string()` For single values
 - `z.string().array()` For multiple values, ie; `?a=1&a=2` -> `[{a: [1,2]}]`
 
 #### `path(key, schema)`
-Given a key and a Schema, validate a path parameter listed in your path, key should take the exact same name as the 
+
+Given a key and a Schema, validate a path parameter listed in your path, key should take the exact same name as the
 `:name` given to the parameter
 
 #### `response(status, schema, {description})`
+
 Given a string status code, zod schema, and optionally a description, add this response to the documentation.
 This validator will **NOT** validate the response, but will provide type checking if using `HasteRequestHandler`.
-
 
 ### Errors
 
@@ -179,14 +188,15 @@ app.listen(3000, () => {
 The best way to understand how something works is to see it in action, check out [the examples](/docs/examples) for
 full end-to-end examples of how express-haste works.
 
-
 ### Roadmap
+
 * [X] Request Handler typing.
 * [ ] Improve test coverage.
 * [X] Lint and Test checking in github actions.
 * [ ] Tests for typing (it's very fragile and hard to catch all edge cases manually).
 * [ ] Explore whether typing can be made less complicated.
-* [ ] Ability to pass many parameters into one query, header, etc function call. ie; `query({q1: z.string(), q2: z.string()})`.
+* [ ] Ability to pass many parameters into one query, header, etc function call.
+  ie; `query({q1: z.string(), q2: z.string()})`.
 * [ ] Ability to customize error response when the request fails.
 * [ ] Define behaviour for when many of the same body validation schemas are provided.
 * [ ] Response validation and/or warning.
