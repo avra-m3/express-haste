@@ -7,4 +7,4 @@ if [ -x "$(command -v nvm)" && -f ".nvmrc" ]; then
   nvm use
 fi
 
-yarn pretest
+yarn test
