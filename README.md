@@ -5,6 +5,7 @@
 A Typescript library that makes documentation, and I/O validation first class passengers in expressJS
 </p>
 <div align="center">
+<a href="https://github.com/avra-m3/express-haste/actions/workflows/test.yml"><img src="https://github.com/avra-m3/express-haste/actions/workflows/test.yml/badge.svg"/><a>
 </div>
 <br>
 
