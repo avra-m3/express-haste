@@ -19,10 +19,10 @@ export function requiresMany<E, ER, H extends [HasteOperation<E>, ...HasteOperat
       operations,
       map(({ _effects }) => _effects as HasteEffect),
       concatAll(HasteMergeMonoid),
-      (v) => v as MergeEvery<H>
+      (v) => v as MergeEvery<H>,
     ),
     validateMany(operations),
-    enhanceMany(operations)
+    enhanceMany(operations),
   );
 }
 
@@ -41,14 +41,14 @@ const validateMany = (operations: HasteOperation<any>[]) => (req: express.Reques
             array.map(({ issues }) => issues),
             array.sequence(Applicative),
             array.flatten,
-            (issues) => ({ issues }) as ZodError
-          )
-        )
-      )
+            (issues) => ({ issues }) as ZodError,
+          ),
+        ),
+      ),
   );
 const enhanceMany = (operations: HasteOperation<any>[]) => (schema: ZodOpenApiOperationObject) =>
   pipe(
-    operations.reduce((result, operation) => mergeDeep(result, operation._enhancer(result)), schema)
+    operations.reduce((result, operation) => mergeDeep(result, operation._enhancer(result)), schema),
   );
 
 const HasteMergeMonoid: Monoid<HasteEffect> = {

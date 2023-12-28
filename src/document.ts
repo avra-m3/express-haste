@@ -39,23 +39,23 @@ const addRouteToDocument = (paths: ZodOpenApiPathsObject, layer: Layer) => {
       pipe(
         value,
         match(constant(O.none), () => O.some(getBaseOperation(method))),
-        O.map((op) => improveOperationFromLayer(layer, op))
-      )
+        O.map((op) => improveOperationFromLayer(layer, op)),
+      ),
     ),
-    (result) => Object.assign({}, paths[path] || {}, result)
+    (result) => Object.assign({}, paths[path] || {}, result),
   );
 };
 
 const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationObject) => {
   if (layer.route) {
     layer.route.stack.forEach((subOperation: Layer) =>
-      improveOperationFromLayer(subOperation, operation)
+      improveOperationFromLayer(subOperation, operation),
     );
   }
   if (isHasteOperation(layer.handle)) {
     operation = mergeDeep(
       operation,
-      layer.handle._enhancer(operation)
+      layer.handle._enhancer(operation),
     );
   }
   return operation;

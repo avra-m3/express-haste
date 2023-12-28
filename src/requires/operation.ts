@@ -7,7 +7,7 @@ import { zodToRfcError } from '../utils';
 export const createHasteOperation = <E extends HasteEffect>(
   effects: E,
   validator: HasteValidator,
-  enhancer: HasteEnhancer
+  enhancer: HasteEnhancer,
 ): HasteOperation<E> => {
   const Operation: Omit<HasteOperation<E>, '()'> = {
     _hastens: true,
@@ -17,7 +17,7 @@ export const createHasteOperation = <E extends HasteEffect>(
   };
 
   return Object.assign(
-    (<Handler>function (this: HasteOperation<E>, req, res, next) {
+    (<Handler>function(this: HasteOperation<E>, req, res, next) {
       pipe(
         req,
         this._validator,
@@ -27,11 +27,11 @@ export const createHasteOperation = <E extends HasteEffect>(
           },
           () => {
             next();
-          }
-        )
+          },
+        ),
       );
     }).bind(Operation),
-    Operation
+    Operation,
   );
 };
 

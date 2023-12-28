@@ -12,7 +12,7 @@ type ResponseOptions = {
 export const requiresResponse = <Status extends StatusCode, Schema extends ZodType>(
   status: Status,
   schema: Schema,
-  options?: ResponseOptions
+  options?: ResponseOptions,
 ): HasteOperation<{ response: [{ status: Status; schema: Schema }] }> =>
   createHasteOperation(
     {
@@ -24,16 +24,16 @@ export const requiresResponse = <Status extends StatusCode, Schema extends ZodTy
       ] as [{ status: Status; schema: Schema }],
     },
     constant(either.right(true)),
-    responseEnhancer(status, schema, options)
+    responseEnhancer(status, schema, options),
   );
 
-const responseEnhancer = <S extends `${1 | 2 | 3 | 4 | 5}${string}`>(
+const responseEnhancer = <S extends `${ 1 | 2 | 3 | 4 | 5 }${ string }`>(
   status: S,
   schema: ZodSchema,
-  options?: ResponseOptions
+  options?: ResponseOptions,
 ) =>
   function responseEnhancer(
-    operation: ZodOpenApiOperationObject
+    operation: ZodOpenApiOperationObject,
   ): Partial<ZodOpenApiOperationObject> {
     return pipe(
       operation.responses,
@@ -42,8 +42,8 @@ const responseEnhancer = <S extends `${1 | 2 | 3 | 4 | 5}${string}`>(
         option.fromNullable(
           (response[status] as ZodOpenApiResponseObject)?.content?.['application/json']?.schema as
             | ZodType
-            | undefined
-        )
+            | undefined,
+        ),
       ),
       option.flatten,
       option.getOrElseW(() => undefined),
@@ -58,6 +58,6 @@ const responseEnhancer = <S extends `${1 | 2 | 3 | 4 | 5}${string}`>(
             },
           },
         } as Record<S, ZodOpenApiResponseObject>,
-      })
+      }),
     );
   };
