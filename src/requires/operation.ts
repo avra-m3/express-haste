@@ -23,7 +23,11 @@ export const createHasteOperation = <E extends HasteEffect>(
         this._validator,
         fold(
           (e) => {
-            res.status(400).json(zodToRfcError(e)).send();
+            res
+              .status(400)
+              .contentType('application/problem+validation+json')
+              .json(zodToRfcError(e))
+              .send();
           },
           () => {
             next();
