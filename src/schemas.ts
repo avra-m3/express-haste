@@ -10,25 +10,52 @@ const ZodApiInfo = z.object({
   description: z.string().optional(),
   termsOfService: z.string().optional(),
   version: z.string(),
-  contact: z.object({
-    name: z.string(),
-    url: z.string(),
-    email: z.string()
-  }).passthrough().optional(),
-  license: z.object({
-    name: z.string(),
-    url: z.string(),
-  }).passthrough().optional(),
+  contact: z
+    .object({
+      name: z.string(),
+      url: z.string(),
+      email: z.string(),
+    })
+    .passthrough()
+    .optional(),
+  license: z
+    .object({
+      name: z.string(),
+      url: z.string(),
+    })
+    .passthrough()
+    .optional(),
 });
 
 export const HasteOptionSchema = z.object({
   openApiVersion: z.enum(openApiVersions).default(openApiVersions[openApiVersions.length - 1]),
   info: ZodApiInfo,
 });
+
 export const ZodIssueSchema = z.object({
-  code: z.string(),
-  path: z.string().array(),
-  message: z.string(),
+  type: z.string().optional().default('https://zod.dev/error_handling?id=zodissuecode').openapi({
+    description: 'A URI reference [RFC3986] that identifies the problem type.',
+  }),
+  code: z.string().optional().openapi({
+    description: 'A zod issue code, indicating what went wrong.',
+  }),
+  path: z
+    .string()
+    .array()
+    .optional()
+    .openapi({
+      description: 'A path/array pointing to the location of the problem.',
+      examples: [
+        ['body', 'key of body'],
+        ['query', 'key of query'],
+        ['header', 'key of header'],
+        ['cookie', 'key of cookie'],
+        ['path', 'key of path'],
+      ],
+    }),
+  message: z.string().openapi({
+    description: 'A human-readable description pointing to the source of the problem',
+  }),
 });
 
 export const RFCResponseSchema = z.object({

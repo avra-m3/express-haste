@@ -23,10 +23,14 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
+    "pretest": "yarn lint --quiet",
     "test": "jest",
-    "lint": "eslint express-haste",
+    "test:ci": "yarn test --coverage",
+    "lint": "eslint  ./src",
+    "pretty": "prettier ./src --fix",
     "build": "rm -rf ./dist && yarn build:types && node esbuild.esm.mjs && node esbuild.mjs",
-    "build:types": "tsc --allowJS false --declaration --emitDeclarationOnly --declarationMap --outDir dist/types --project tsconfig.json"
+    "build:types": "tsc --allowJS false --declaration --emitDeclarationOnly --declarationMap --outDir dist/types --project tsconfig.json",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.6",
@@ -48,7 +52,8 @@
     "supertest": "^6.3.3",
     "ts-jest": "29.1.1",
     "ts-node": "^10.4.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "husky": "^8.0.0"
   },
   "license": "MIT",
   "peerDependencies": {

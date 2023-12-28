@@ -5,7 +5,7 @@ import {
   ZodOpenApiOperationObject,
   ZodOpenApiPathsObject,
 } from 'zod-openapi/lib-types/create/document';
-import type { Layer, Router } from 'express';
+import express, { Layer, Router } from 'express';
 import { filterMapWithIndex } from 'fp-ts/Record';
 import { match } from 'fp-ts/boolean';
 import * as O from 'fp-ts/Option';
@@ -53,15 +53,12 @@ const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationO
     );
   }
   if (isHasteOperation(layer.handle)) {
-    operation = mergeDeep(
-      operation,
-      layer.handle._enhancer(operation)
-    );
+    operation = mergeDeep(operation, layer.handle._enhancer(operation));
   }
   return operation;
 };
 
-const isHasteOperation = (value: Function): value is HasteOperation<any> =>
+const isHasteOperation = (value: express.Handler): value is HasteOperation =>
   '_hastens' in value && value._hastens === true;
 
 const methodsWithoutBody = ['get', 'head', 'options'];
@@ -82,7 +79,7 @@ const getBaseOperation = (method: string): ZodOpenApiOperationObject => {
 const BadRequest: ZodOpenApiResponseObject = {
   description: '400 BAD REQUEST',
   content: {
-    'application/json': {
+    'application/problem+validation+json': {
       schema: HasteBadRequestSchema,
     },
   },

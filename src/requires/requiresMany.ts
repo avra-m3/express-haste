@@ -1,8 +1,6 @@
-// @ts-ignore
 import { concatAll, Monoid } from 'fp-ts/Monoid';
-import { HasteEffect, HasteOperation } from '../types';
+import { HasteEffect, HasteOperation, MergeEvery } from '../types';
 import { createHasteOperation } from './operation';
-import { MergeEvery } from '../types';
 import { constant, flow, pipe } from 'fp-ts/function';
 import { Applicative, map, separate } from 'fp-ts/Array';
 import express from 'express';
@@ -26,7 +24,7 @@ export function requiresMany<E, ER, H extends [HasteOperation<E>, ...HasteOperat
   );
 }
 
-const validateMany = (operations: HasteOperation<any>[]) => (req: express.Request) =>
+const validateMany = (operations: HasteOperation[]) => (req: express.Request) =>
   pipe(
     operations,
     map((op) => op._validator(req)),
@@ -46,7 +44,7 @@ const validateMany = (operations: HasteOperation<any>[]) => (req: express.Reques
         )
       )
   );
-const enhanceMany = (operations: HasteOperation<any>[]) => (schema: ZodOpenApiOperationObject) =>
+const enhanceMany = (operations: HasteOperation[]) => (schema: ZodOpenApiOperationObject) =>
   pipe(
     operations.reduce((result, operation) => mergeDeep(result, operation._enhancer(result)), schema)
   );

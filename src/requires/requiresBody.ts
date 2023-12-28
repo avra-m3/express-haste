@@ -1,4 +1,4 @@
-import { ZodSchema } from 'zod';
+import { z, ZodSchema } from 'zod';
 import express from 'express';
 import { pipe } from 'fp-ts/function';
 import { parseSafe } from '../utils';
@@ -21,7 +21,5 @@ const bodyEnhancer = (schema: ZodSchema) => () => ({
     },
   },
 });
-const bodyValidator = (schema: ZodSchema) => (req: express.Request) => pipe(
-    req.body,
-    parseSafe(schema),
-)
+const bodyValidator = (schema: ZodSchema) => (req: express.Request) =>
+  pipe({ body: req.body }, parseSafe(z.object({ body: schema })));

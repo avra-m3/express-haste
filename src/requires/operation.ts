@@ -34,4 +34,3 @@ export const createHasteOperation = <E extends HasteEffect>(
     Operation
   );
 };
-

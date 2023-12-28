@@ -7,7 +7,7 @@ import { ParameterLocation } from 'zod-openapi/lib-types/openapi3-ts/dist/model/
 import { createHasteOperation } from './operation';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
 import { either, option, record } from 'fp-ts';
-import { HasteOperation } from "../types";
+import { HasteOperation } from '../types';
 
 export const requiresParameter =
   <L extends ParameterLocation>(where: L) =>
@@ -66,7 +66,7 @@ const locationRequestMapping: Record<ParameterLocation, keyof express.Request> =
 };
 
 function parameterEnhancer(
-  this: HasteOperation<any>,
+  this: HasteOperation,
   operation: ZodOpenApiOperationObject
 ): Partial<ZodOpenApiOperationObject> {
   return {

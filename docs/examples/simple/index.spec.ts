@@ -1,6 +1,7 @@
 import request from 'supertest';
-import app from '../docs/examples/simple';
-import * as H from '../src';
+import * as H from '../../../src';
+import app from './index';
+import 'express-haste';
 
 jest.mock('express-haste', () => H);
 
@@ -19,11 +20,17 @@ describe('requires', () => {
         detail: 'Request failed to validate',
         issues: [
           {
+            type: 'https://zod.dev/error_handling?id=zodissuecode',
             code: 'invalid_enum_value',
-            path: ['type'],
-            message: 'Invalid enum value. Expected \'cat\' | \'dog\', received \'fish\'',
+            path: ['body', 'type'],
+            message: "Invalid enum value. Expected 'cat' | 'dog', received 'fish'",
           },
-          { code: 'invalid_type', path: ['header', 'authorization'], message: 'Required' },
+          {
+            type: 'https://zod.dev/error_handling?id=zodissuecode',
+            code: 'invalid_type',
+            path: ['header', 'authorization'],
+            message: 'Required',
+          },
         ],
       })
       .expect(400);
@@ -47,7 +54,7 @@ describe('requires', () => {
   });
 
   it('Should return a validation error when cookie is missing', async () => {
-    return  request(app)
+    return request(app)
       .get('/pets?id=123')
       .expect({
         type: 'about:blank',
@@ -55,14 +62,14 @@ describe('requires', () => {
         detail: 'Request failed to validate',
         issues: [
           {
+            type: 'https://zod.dev/error_handling?id=zodissuecode',
             code: 'invalid_string',
             path: ['query', 'id'],
             message: 'Must be a valid pet identifier.',
           },
         ],
       })
-      .expect(400)
-    ;
+      .expect(400);
   });
 
   it('Should return a validation error when query fails to match schema.', async () => {
@@ -74,6 +81,7 @@ describe('requires', () => {
         detail: 'Request failed to validate',
         issues: [
           {
+            type: 'https://zod.dev/error_handling?id=zodissuecode',
             code: 'invalid_string',
             path: ['query', 'id'],
             message: 'Must be a valid pet identifier.',
@@ -89,7 +97,14 @@ describe('requires', () => {
         type: 'about:blank',
         title: 'Bad request',
         detail: 'Request failed to validate',
-        issues: [{ code: 'invalid_string', path: ['path', 'id'], message: 'Must be a valid pet identifier.' }],
+        issues: [
+          {
+            type: 'https://zod.dev/error_handling?id=zodissuecode',
+            code: 'invalid_string',
+            path: ['path', 'id'],
+            message: 'Must be a valid pet identifier.',
+          },
+        ],
       })
       .expect(400);
   });
@@ -101,7 +116,12 @@ describe('requires', () => {
         type: 'cat',
         breed: 'tomcat',
       })
-      .expect({ type: 'cat', breed: 'burmese', id: '16655163-72e9-474a-88c5-1eb866594c08', vaccinated: true })
+      .expect({
+        type: 'cat',
+        breed: 'burmese',
+        id: '16655163-72e9-474a-88c5-1eb866594c08',
+        vaccinated: true,
+      })
       .expect(200);
   });
   it('Should let the request through when cookie and path is provided', async () => {
@@ -111,7 +131,12 @@ describe('requires', () => {
         type: 'cat',
         breed: 'tomcat',
       })
-      .expect({ type: 'cat', breed: 'burmese', id: '16655163-72e9-474a-88c5-1eb866594c08', vaccinated: true })
+      .expect({
+        type: 'cat',
+        breed: 'burmese',
+        id: '16655163-72e9-474a-88c5-1eb866594c08',
+        vaccinated: true,
+      })
       .expect(200);
   });
 });

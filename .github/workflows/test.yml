@@ -1,0 +1,59 @@
+name: "Test :test_tube:"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'master'
+permissions: {}
+
+jobs:
+  validate:
+    name: Lint & Test
+    permissions:
+      checks: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out repo 📦"
+        uses: actions/checkout@v3
+
+      - name: "Setup Node ⚙️"
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: "Install dependencies ⚙️"
+        run: yarn install --frozen-lockfile
+
+      - name: "Lint 🔎"
+        run: yarn lint
+
+      - name: "Test 🧪"
+        run: yarn test:ci
+
+      - name: "Build 🔨"
+        run: yarn build
+  "validate-examples":
+    name: Validate Examples
+    permissions:
+      checks: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out repo 📦"
+        uses: actions/checkout@v3
+
+      - name: "Setup Node ⚙️"
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: "Install project dependencies ⚙️"
+        run: yarn install --frozen-lockfile
+
+      - name: "Install example dependencies ⚙️"
+        working-directory: docs/examples/simple
+        run: yarn install --frozen-lockfile
+
+      - name: "Test 🧪"
+        working-directory: docs/examples/simple
+        run: yarn test:ci
