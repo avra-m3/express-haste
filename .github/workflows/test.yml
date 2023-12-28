@@ -14,22 +14,22 @@ jobs:
       checks: write
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
+      - name: "Check out repo 📦"
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: "Setup Node ⚙️"
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
 
-      - name: "Install dependencies :mechanic:"
+      - name: "Install dependencies ⚙️"
         run: yarn install --frozen-lockfile
 
-      - name: "Test :scientist:"
+      - name: "Test 🧪"
         run: yarn test:ci
 
-      - name: "Lint :detective:"
+      - name: "Lint 🔎"
         run: yarn lint
 
-      - name: "Build :construction_worker:"
+      - name: "Build 🔨"
         run: yarn build

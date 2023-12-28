@@ -7,7 +7,7 @@ import {
   searchPets,
 } from './petHandler';
 import express, { json } from 'express';
-import { document } from '../../../src';
+import { document } from 'express-haste';
 import cookieParser from 'cookie-parser';
 import { getRedocHtml } from "./redoc";
 
