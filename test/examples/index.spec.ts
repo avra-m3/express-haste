@@ -1,6 +1,6 @@
 import request from 'supertest';
-import app from '../docs/examples/simple';
-import * as H from '../src';
+import app from '../../docs/examples/simple';
+import * as H from '../../src';
 
 jest.mock('express-haste', () => H);
 
