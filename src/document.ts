@@ -82,7 +82,7 @@ const getBaseOperation = (method: string): ZodOpenApiOperationObject => {
 const BadRequest: ZodOpenApiResponseObject = {
   description: '400 BAD REQUEST',
   content: {
-    'application/json': {
+    'application/problem+validation+json': {
       schema: HasteBadRequestSchema,
     },
   },
