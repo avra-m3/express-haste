@@ -47,8 +47,13 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      - name: "Install dependencies ⚙️"
-        run: yarn install --frozen-lockfile --cwd docs/examples/simple
+      - name: "Install project dependencies ⚙️"
+        run: yarn install --frozen-lockfile
+
+      - name: "Install example dependencies ⚙️"
+        working-directory: docs/examples/simple
+        run: yarn install --frozen-lockfile
 
       - name: "Test 🧪"
-        run: yarn test --cwd docs/examples/simple
+        working-directory: docs/examples/simple
+        run: yarn test:ci

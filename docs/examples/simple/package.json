@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node ./serve.ts",
-    "test": "jest"
+    "test:ci": "jest"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
