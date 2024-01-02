@@ -4,18 +4,21 @@ import { pipe } from 'fp-ts/function';
 import { parseSafe } from '../utils';
 import { createHasteOperation } from './operation';
 
-export const requiresBody = <S extends ZodSchema>(schema: S) =>
+type BodyOptions = {
+  contentType: string;
+};
+export const requiresBody = <S extends ZodSchema>(schema: S, options?: BodyOptions) =>
   createHasteOperation(
     {
       body: schema,
     },
     bodyValidator(schema),
-    bodyEnhancer(schema)
+    bodyEnhancer(schema, options)
   );
-const bodyEnhancer = (schema: ZodSchema) => () => ({
+const bodyEnhancer = (schema: ZodSchema, options?: BodyOptions) => () => ({
   requestBody: {
     content: {
-      'application/json': {
+      [options?.contentType || 'application/json']: {
         schema,
       },
     },
