@@ -1,4 +1,4 @@
-import { addRouteToDocument, BadRequest, isHasteOperation, document } from './document';
+import { addRouteToDocument, BadRequest, document, isHasteOperation } from './document';
 import { z } from 'zod';
 import { body, header, query, response } from './requires';
 import { HasteOperation } from './types';
@@ -165,7 +165,7 @@ describe('document', () => {
 
   describe('document', () => {
     const expectedBadRequest = {
-      '400': {
+      '400-bad-request': {
         description: '400 BAD REQUEST',
         content: {
           'application/problem+validation+json': {
@@ -255,9 +255,14 @@ describe('document', () => {
               },
             },
             responses: {
-              ...expectedBadRequest,
+              400: { $ref: '#/components/responses/400-bad-request' },
             },
           },
+        },
+      },
+      components: {
+        responses: {
+          ...expectedBadRequest,
         },
       },
     };

@@ -41,26 +41,27 @@ export const addRouteToDocument = (paths: ZodOpenApiPathsObject, layer: Layer) =
     return paths;
   }
 
-  paths[path] = pipe(
-    methods,
-    record.filterMap((value) =>
-      pipe(
-        value,
-        match(constant(O.none), () =>
-          O.some({
-            responses: {
-              400: BadRequest,
-            },
-          })
-        ),
-        O.map((op) => mergeDeep(op, paths?.[AllPathsKey]?.['use' as 'get'] || {})),
-        O.map((op) => mergeDeep(op, paths?.[path]?.['use' as 'get'] || {})),
-        O.map((op) => improveOperationFromLayer(layer, op))
-      )
+  return Object.assign({}, paths, {
+    [path]: pipe(
+      methods,
+      record.filterMap((value) =>
+        pipe(
+          value,
+          match(constant(O.none), () =>
+            O.some({
+              responses: {
+                400: BadRequest,
+              },
+            })
+          ),
+          O.map((op) => mergeDeep(op, paths?.[AllPathsKey]?.['use' as 'get'] || {})),
+          O.map((op) => mergeDeep(op, paths?.[path]?.['use' as 'get'] || {})),
+          O.map((op) => improveOperationFromLayer(layer, op))
+        )
+      ),
+      (result) => mergeDeep({}, paths[path] || {}, result)
     ),
-    (result) => mergeDeep({}, paths[path] || {}, result)
-  );
-  return paths;
+  });
 };
 
 const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationObject) => {
@@ -72,7 +73,7 @@ const improveOperationFromLayer = (layer: Layer, operation: ZodOpenApiOperationO
   if (isHasteOperation(layer.handle)) {
     return mergeDeep({}, operation, layer.handle._enhancer(operation));
   }
-  return operation;
+  return Object.assign({}, operation);
 };
 
 export const isHasteOperation = (value: express.Handler): value is HasteOperation =>

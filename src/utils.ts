@@ -90,9 +90,12 @@ export function mergeDeep<A, B extends Array<unknown>>(
 
       if (isObject(sourceKey) && !isZodType(sourceKey) && !isZodType(targetKey)) {
         if (!targetKey) {
-          Object.assign(target, { [key]: sourceKey });
+          Object.assign(target, { [key]: {} });
           targetKey = target[key];
-        } else if (sourceKey !== targetKey) {
+        }
+        if (!Object.isFrozen(targetKey) && Object.isFrozen(sourceKey)) {
+          Object.assign(target, { [key]: sourceKey });
+        } else if (!Object.isFrozen(targetKey)) {
           mergeDeep(targetKey as Record<string, unknown>, sourceKey as Record<string, unknown>);
         }
       } else {
