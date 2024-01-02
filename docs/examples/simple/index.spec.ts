@@ -7,8 +7,30 @@ jest.mock('express-haste', () => H);
 
 describe('requires', () => {
   it('Should validate the request body', async () => {
-    return request(app)
+    await request(app)
       .post('/pets/123')
+      .send({
+        type: 'fish',
+        breed: 'carp',
+        vaccinated: true,
+      })
+      .expect({
+        type: 'about:blank',
+        title: 'Bad request',
+        detail: 'Request failed to validate',
+        issues: [
+          {
+            type: 'https://zod.dev/error_handling?id=zodissuecode',
+            code: 'invalid_type',
+            path: ['header', 'authorization'],
+            message: 'Required',
+          },
+        ],
+      })
+      .expect(400);
+    await request(app)
+      .post('/pets/123')
+      .auth('admin', 'password')
       .send({
         type: 'fish',
         breed: 'carp',
@@ -24,12 +46,6 @@ describe('requires', () => {
             code: 'invalid_enum_value',
             path: ['body', 'type'],
             message: "Invalid enum value. Expected 'cat' | 'dog', received 'fish'",
-          },
-          {
-            type: 'https://zod.dev/error_handling?id=zodissuecode',
-            code: 'invalid_type',
-            path: ['header', 'authorization'],
-            message: 'Required',
           },
         ],
       })
@@ -56,6 +72,7 @@ describe('requires', () => {
   it('Should return a validation error when cookie is missing', async () => {
     return request(app)
       .get('/pets?id=123')
+      .auth('admin', 'password')
       .expect({
         type: 'about:blank',
         title: 'Bad request',
@@ -75,6 +92,7 @@ describe('requires', () => {
   it('Should return a validation error when query fails to match schema.', async () => {
     return request(app)
       .get('/pets?id=123')
+      .auth('admin', 'password')
       .expect({
         type: 'about:blank',
         title: 'Bad request',
@@ -112,6 +130,7 @@ describe('requires', () => {
   it('Should let the request through when cookie and query is provided', async () => {
     return request(app)
       .get('/pets?id=16655163-72e9-474a-88c5-1eb866594c08')
+      .auth('admin', 'password')
       .send({
         type: 'cat',
         breed: 'tomcat',
