@@ -8,6 +8,7 @@ import { HasteOperation, StatusCode } from '../types';
 
 type ResponseOptions = {
   description?: string;
+  contentType: string;
 };
 export const requiresResponse = <Status extends StatusCode, Schema extends ZodType>(
   status: Status,
@@ -40,9 +41,9 @@ const responseEnhancer = <S extends `${1 | 2 | 3 | 4 | 5}${string}`>(
       option.fromNullable,
       option.map((response) =>
         option.fromNullable(
-          (response[status] as ZodOpenApiResponseObject)?.content?.['application/json']?.schema as
-            | ZodType
-            | undefined
+          (response[status] as ZodOpenApiResponseObject)?.content?.[
+            options?.contentType || 'application/json'
+          ]?.schema as ZodType | undefined
         )
       ),
       option.flatten,
@@ -52,7 +53,7 @@ const responseEnhancer = <S extends `${1 | 2 | 3 | 4 | 5}${string}`>(
           [status]: {
             description: options?.description,
             content: {
-              'application/json': {
+              [options?.contentType || 'application/json']: {
                 schema: oldSchema ? oldSchema.or(schema) : schema,
               },
             },

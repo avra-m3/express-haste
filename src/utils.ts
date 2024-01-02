@@ -93,7 +93,11 @@ export function mergeDeep<A, B extends Array<unknown>>(
           Object.assign(target, { [key]: {} });
           targetKey = target[key];
         }
-        mergeDeep(targetKey as Record<string, unknown>, sourceKey as Record<string, unknown>);
+        if (!Object.isFrozen(targetKey) && Object.isFrozen(sourceKey)) {
+          Object.assign(target, { [key]: sourceKey });
+        } else if (!Object.isFrozen(targetKey)) {
+          mergeDeep(targetKey as Record<string, unknown>, sourceKey as Record<string, unknown>);
+        }
       } else {
         if (Array.isArray(targetKey) && Array.isArray(sourceKey)) {
           Object.assign(target, { [key]: [...targetKey, ...sourceKey] });

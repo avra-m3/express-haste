@@ -50,7 +50,6 @@ export const createPetRequirements = requires(
     body(PetSchema),
     path('id', z.string()),
     query('async', AsyncCreationRequest),
-    header('authorization', UsernamePasswordAuth),
     response('202', JobAcceptedSchema),
     response('201', JobAcceptedSchema),
 );

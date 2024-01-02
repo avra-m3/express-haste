@@ -45,8 +45,9 @@ const validateMany = (operations: HasteOperation[]) => (req: express.Request) =>
       )
   );
 const enhanceMany = (operations: HasteOperation[]) => (schema: ZodOpenApiOperationObject) =>
-  pipe(
-    operations.reduce((result, operation) => mergeDeep(result, operation._enhancer(result)), schema)
+  operations.reduce(
+    (result, operation) => mergeDeep({}, operation._enhancer(result), result),
+    schema
   );
 
 const HasteMergeMonoid: Monoid<HasteEffect> = {

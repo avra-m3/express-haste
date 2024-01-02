@@ -1,8 +1,7 @@
-import { ZodSchema } from 'zod';
 import { requiresParameter } from './requiresParameter';
 import { requiresBody } from './requiresBody';
 
-export const body = <S extends ZodSchema>(schema: S) => requiresBody(schema);
+export const body = requiresBody;
 
 export const path = requiresParameter('path');
 export const cookie = requiresParameter('cookie');
