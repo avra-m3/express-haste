@@ -5,12 +5,12 @@
 A Typescript library that makes documentation, and I/O validation first class passengers in expressJS
 </p>
 <div align="center">
-<a href="https://github.com/avra-m3/express-haste/actions/workflows/test.yml">
-<img src="https://github.com/avra-m3/express-haste/actions/workflows/test.yml/badge.svg" alt="Test Status"/>
-</a>
-<a href="https://github.com/avra-m3/express-haste/actions/workflows/release.yml">
-<img src="https://github.com/avra-m3/express-haste/actions/workflows/release.yml/badge.svg" alt="Release Status"/>
-</a>
+  <a style="text-decoration: none" href="https://github.com/avra-m3/express-haste/actions/workflows/test.yml">
+  <img src="https://github.com/avra-m3/express-haste/actions/workflows/test.yml/badge.svg" alt="Test Status"/>
+  </a>
+  <a href="https://github.com/avra-m3/express-haste/actions/workflows/release.yml">
+  <img src="https://github.com/avra-m3/express-haste/actions/workflows/release.yml/badge.svg" alt="Release Status"/>
+  </a>
 </div>
 <br>
 
@@ -99,6 +99,23 @@ Given a key and a Schema, validate a path parameter listed in your path, key sho
 Given a string status code, zod schema, and optionally a description, add this response to the documentation.
 This validator will **NOT** validate the response, but will provide type checking if using `HasteRequestHandler`.
 
+
+#### Applying validation to many requests;
+As a middleware, you can `use` validation middleware and apply it to many requests, like follows;
+```typescript
+const app = express();
+
+app.use(header('authorization', z.string()))
+```
+
+This will also apply the header to all routes defined after this middleware in the documentation.
+
+##### Limitations
+- Haste will only group ZodErrors that are grouped in the same `require`, you will receive two groups of errors when 
+applying validation in both use middleware and on a route.
+- While a pathless use will apply documentation, adding a path ie `use('/test')` will likely create unexpected behaviour, testing
+this case would be a good idea.
+
 ### Errors
 
 When validation fails, express-haste will return an opinionated RFC-7807 compliant error (customization is on the
@@ -161,7 +178,6 @@ const handler: HasteRequestHandler<typeof testRequirements> = (req, res) => {
 
 app.post("/test/:pathid", testRequirements, handler);
 ```
-
 ### Documenting
 
 The document api, will automatically pick up the routes currently mounted on your app and return an openapi json object.
