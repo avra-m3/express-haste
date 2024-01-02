@@ -6,8 +6,11 @@
     "src/index.ts"
   ],
   "compilerOptions": {
+    "allowJs": false,
     "target": "esnext",
     "module": "commonjs",
+    "declaration": true,
+    "declarationMap": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,

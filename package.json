@@ -1,6 +1,6 @@
 {
   "name": "express-haste",
-  "version": "0.0.6",
+  "version": "0.0.7-canary.0",
   "description": "",
   "homepage": "https://github.com/avra-m3/express-haste#readme",
   "bugs": {
@@ -31,8 +31,8 @@
     "test:ci": "yarn test --coverage",
     "lint": "eslint  ./src",
     "pretty": "prettier ./src --fix",
-    "build": "rm -rf ./dist && yarn build:types && node esbuild.esm.mjs && node esbuild.mjs",
-    "build:types": "tsc --allowJS false --declaration --emitDeclarationOnly --declarationMap --outDir dist/types --project tsconfig.json",
+    "build": "rm -rf ./dist && tsc --emitDeclarationOnly --project tsconfig.json && node esbuild.esm.mjs && node esbuild.mjs",
+    "publish:canary": "yarn build && yarn version --prerelease --preid=canary && npm publish --tag canary",
     "prepare": "husky install"
   },
   "devDependencies": {
