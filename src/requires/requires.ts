@@ -22,20 +22,23 @@ export function requires<
   Config extends RequirementConfig = RequirementConfig,
 >(config?: Config, _effects?: Effect) {
   const requires = {
-    _effects: _effects || ({} as Effect),
-    _config: config || {},
-    _hastens: true,
-    _enhancer(operation) {
-      return enhanceAll(this._effects, operation);
-    },
-    _validator(req) {
-      return validateAll(this._effects, req);
-    },
-
+    /**
+     * Add a validation against the `request.body` field, this field must match the given schema or the errorHandler will
+     * be called.
+     * @param schema {ZodType} Any zod schema, json is the default assumed incoming value.
+     * @param config {BodyConfig} Customise the behaviour of the body validator including changing the contentType.
+     */
     body<Body extends ZodType, Config extends BodyConfig>(schema: Body, config?: Config) {
       return enhanceRequirement(this, { body: { schema, config: config || ({} as Config) } });
     },
 
+    /**
+     * Add a validation against the `request.query` field, this field must contain and match the expected value or the errorHandler will
+     * be called.
+     * @param parameter {string} The key of this query parameter.
+     * @param schema {ZodType} The schema this key should match, incoming query parameters should only ever be z.string() or z.string().array(),
+     * you can use transforms to extend these to another type ie transform a string to a number etc.
+     */
     query<Key extends string, Value extends ZodType>(parameter: Key, schema: Value) {
       return pipe(
         this._effects.query,
@@ -51,6 +54,13 @@ export function requires<
       );
     },
 
+    /**
+     * Add validation against the `request.params` field, this field must contain and match the expected value or the errorHandler will
+     * be called.
+     * @param key {string} The key of this path field as defined in the path given to express.
+     * @param schema {ZodType} The schema this key should match, incoming paths will only ever be z.string() although
+     * typing allows you to pass any schema.
+     */
     path<Key extends string, Value extends ZodType>(key: Key, schema: Value) {
       return pipe(
         this._effects.path,
@@ -65,6 +75,14 @@ export function requires<
         (effect) => enhanceRequirement(this, effect)
       );
     },
+
+    /**
+     * Add validation against the `request.headers` `field, this field must contain and match the expected value or the errorHandler will
+     * be called.
+     * @param key {string} The header field name, non-standard header fields should be prefixed by x- as per convention.
+     * @param schema {ZodType} The schema the header value should match, incoming headers will only ever be z.string() although
+     * typing allows you to pass any schema.
+     */
     header<Key extends string, Value extends ZodType>(key: Key, schema: Value) {
       return pipe(
         this._effects.header,
@@ -79,6 +97,15 @@ export function requires<
         (effect) => enhanceRequirement(this, effect)
       );
     },
+
+    /**
+     * Add validation against the `request.cookies` `field, this field must contain and match the expected value or the errorHandler will
+     * be called.
+     * @requires cookie-parser cookie-parser must set up to parse cookie fields.
+     * @param key {string} The cookie field name, non-standard header fields should be prefixed by x- as per convention.
+     * @param schema {ZodType} The schema the header value should match, incoming headers will only ever be z.string() although
+     * typing allows you to pass any schema.
+     */
     cookie<Key extends string, Value extends ZodType>(key: Key, schema: Value) {
       return pipe(
         this._effects.cookie,
@@ -94,6 +121,12 @@ export function requires<
       );
     },
 
+    /**
+     * This validator exists purely for request type enrichment and documentation purposes, no validation will occur for responses.
+     * @param status {StatusCode} The status code this response is for, used in documentation and type enhancement.
+     * @param schema {ZodType} The schema to validate, used for documentation and type enhancement.
+     * @param config { ResponseConfig } Specify an alternate contentType, used only for documentation.
+     */
     response<Status extends StatusCode, Response extends ZodType, RConfig extends ResponseConfig>(
       status: Status,
       schema: Response,
@@ -110,6 +143,16 @@ export function requires<
             Omit<Effect, 'response'> & MergeTwoResponses<Effect, Status, Response>
           >
       );
+    },
+
+    _effects: _effects || ({} as Effect),
+    _config: config || {},
+    _hastens: true,
+    _enhancer(operation) {
+      return enhanceAll(this._effects, operation);
+    },
+    _validator(req) {
+      return validateAll(this._effects, req);
     },
     _handle(req: express.Request, res: express.Response, next: NextFunction) {
       return pipe(
