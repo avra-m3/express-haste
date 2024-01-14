@@ -207,10 +207,10 @@ full end-to-end examples of how express-haste works.
 ### Roadmap
 
 * [X] Request Handler typing.
-* [ ] Improve test coverage.
+* [X] Improve test coverage.
 * [X] Lint and Test checking in github actions.
 * [ ] Tests for typing (it's very fragile and hard to catch all edge cases manually).
-* [ ] Explore whether typing can be made less complicated.
+* [X] Explore whether typing can be made less complicated.
 * [ ] Ability to pass many parameters into one query, header, etc function call.
   ie; `query({q1: z.string(), q2: z.string()})`.
 * [ ] Ability to customize error response when the request fails.

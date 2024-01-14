@@ -67,3 +67,5 @@ export type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) ex
 ) => void
   ? I
   : never;
+
+export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;

@@ -10,10 +10,10 @@ import express, { Router, json } from 'express';
 import { document } from 'express-haste';
 import cookieParser from 'cookie-parser';
 import { getRedocHtml } from "./redoc";
-import { header } from 'express-haste';
 import { UsernamePasswordAuth } from './schemas';
+import { requires } from '../../../src';
 
-const app = express();
+const app: express.Express = express();
 
 app.use(json());
 app.use(cookieParser());
@@ -26,7 +26,7 @@ app.use('/docs', docRouter)
 app.get('/pet/:id', getOnePetRequirements, getOnePet);
 
 // Require an authorization header
-app.use(header('authorization', UsernamePasswordAuth))
+app.use(requires().header('authorization', UsernamePasswordAuth))
 
 app.post('/pets/:id', createPetRequirements, createPetHandler);
 app.get('/pets', searchPetRequirements, searchPets);
