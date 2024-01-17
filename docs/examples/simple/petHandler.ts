@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z, ZodType } from 'zod';
 import { HasteRequestHandler, requires } from 'express-haste';
 import {
   AsyncCreationRequest,
@@ -14,7 +14,6 @@ export const searchPetRequirements = requires()
   .query('async', AsyncCreationRequest)
   .response('200', PetWithIdSchema)
   .response('202', JobAcceptedSchema);
-
 export const searchPets: HasteRequestHandler<typeof searchPetRequirements> = (req, res) => {
   if (req.query.async === true) {
     return res.status(200).json({

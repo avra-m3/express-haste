@@ -69,3 +69,4 @@ export type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) ex
   : never;
 
 export type ParseInt<T> = T extends `${infer N extends number}` ? N : never;
+export type RequiresProp<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;

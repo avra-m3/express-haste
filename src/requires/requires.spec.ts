@@ -3,8 +3,9 @@ import { validateAll } from './validators';
 import { either } from 'fp-ts';
 import express from 'express';
 import { z, ZodBoolean, ZodNumber, ZodObject, ZodString } from 'zod';
-import { enhanceAll } from './enhancers';
+import { enhanceAll, enhanceAllComponents } from './enhancers';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
+import { ZodOpenApiComponentsObject } from 'zod-openapi';
 
 jest.mock('./validators');
 jest.mock('./enhancers');
@@ -213,5 +214,14 @@ describe('requires', () => {
     (enhanceAll as jest.Mock).mockReturnValue(returnValue);
     expect(requirements._enhancer(operation)).toEqual(returnValue);
     expect(enhanceAll).toHaveBeenCalledWith(requirements._effects, operation);
+  });
+
+  it('should call enhanceAllComponents when _components is called', () => {
+    const requirements = requires().body(z.string());
+    const returnValue = { some: 'spec object' };
+    const operation = {} as ZodOpenApiComponentsObject;
+    (enhanceAllComponents as jest.Mock).mockReturnValue(returnValue);
+    expect(requirements._components(operation)).toEqual(returnValue);
+    expect(enhanceAllComponents).toHaveBeenCalledWith(requirements._effects);
   });
 });

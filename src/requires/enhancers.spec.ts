@@ -1,6 +1,6 @@
 import { requires } from './requires';
 import { z, ZodObject } from 'zod';
-import { enhanceAll } from './enhancers';
+import { enhanceAll, enhanceAllComponents } from './enhancers';
 import {
   ZodOpenApiOperationObject,
   ZodOpenApiParameters,
@@ -238,6 +238,110 @@ describe('enhancers', () => {
         test: exampleSchema,
         test2: number,
         another: boolean,
+      });
+    });
+  });
+
+  describe('auth', () => {
+    it('should return no security scheme', () => {
+      const spec = requires().body(z.number());
+      expect(enhanceAllComponents(spec._effects)).toEqual({});
+    });
+    it('should return the security scheme', () => {
+      const auth = requires().auth('ApiBearerToken', {
+        type: 'apiKey',
+        scheme: 'Bearer',
+      });
+      expect(enhanceAll(auth._effects, {} as ZodOpenApiOperationObject)).toEqual({
+        security: [
+          {
+            ApiBearerToken: [],
+          },
+        ],
+      });
+    });
+    it('should return many security scheme', () => {
+      const spec = requires()
+        .auth('ApiBearerToken', {
+          type: 'apiKey',
+          scheme: 'Bearer',
+        })
+        .auth(
+          'Oauth2',
+          {
+            type: 'oauth2',
+            flows: {
+              authorizationCode: {
+                authorizationUrl: 'https://example.com/oauth/authorize',
+                tokenUrl: ' https://example.com/oauth/token',
+                scopes: ['read', 'write'],
+              },
+            },
+          },
+          { requireScopes: ['write'] }
+        );
+      expect(enhanceAll(spec._effects, {} as ZodOpenApiOperationObject)).toEqual({
+        security: [
+          {
+            ApiBearerToken: [],
+          },
+          {
+            Oauth2: ['write'],
+          },
+        ],
+      });
+    });
+    it('should provide security components', () => {
+      const spec = requires().auth('ApiBearerToken', {
+        type: 'apiKey',
+        scheme: 'Bearer',
+      });
+      expect(enhanceAllComponents(spec._effects)).toEqual({
+        securitySchemes: {
+          ApiBearerToken: {
+            scheme: 'Bearer',
+            type: 'apiKey',
+          },
+        },
+      });
+    });
+    it('should provide security components when more than one auth option is provided', () => {
+      const spec = requires()
+        .auth('ApiBearerToken', {
+          type: 'apiKey',
+          scheme: 'Bearer',
+        })
+        .auth(
+          'Oauth2',
+          {
+            type: 'oauth2',
+            flows: {
+              authorizationCode: {
+                authorizationUrl: 'https://example.com/oauth/authorize',
+                tokenUrl: ' https://example.com/oauth/token',
+                scopes: ['read', 'write'],
+              },
+            },
+          },
+          { requireScopes: ['write'] }
+        );
+      expect(enhanceAllComponents(spec._effects)).toEqual({
+        securitySchemes: {
+          ApiBearerToken: {
+            scheme: 'Bearer',
+            type: 'apiKey',
+          },
+          Oauth2: {
+            flows: {
+              authorizationCode: {
+                authorizationUrl: 'https://example.com/oauth/authorize',
+                scopes: ['read', 'write'],
+                tokenUrl: ' https://example.com/oauth/token',
+              },
+            },
+            type: 'oauth2',
+          },
+        },
       });
     });
   });

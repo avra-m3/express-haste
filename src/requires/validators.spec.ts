@@ -275,4 +275,118 @@ describe('validators', () => {
       ],
     });
   });
+
+  describe('auth', () => {
+    it('should return right by default', () => {
+      const req = requires().auth('oauth', { type: 'http' });
+      const result = validateAll(req._effects, {} as express.Request);
+      expect(either.isRight(result)).toEqual(true);
+    });
+    it('should return a right when validation function returns true', () => {
+      const validator = jest.fn().mockReturnValue(true);
+      const secScheme = { type: 'http' } as const;
+      const requirements = requires().auth('oauth', secScheme, { validator });
+      const req = {} as express.Request;
+      const result = validateAll(requirements._effects, req);
+      expect(either.isRight(result)).toEqual(true);
+      expect(validator).toBeCalledWith(req, secScheme);
+    });
+    it('should return a left when validation function returns false', () => {
+      const validator = jest.fn().mockReturnValue(false);
+      const secScheme = { type: 'http' } as const;
+      const requirements = requires().auth('oauth', secScheme, { validator });
+      const req = {} as express.Request;
+      const result = validateAll(requirements._effects, req);
+      expect(either.isLeft(result)).toEqual(true);
+      expect(result).toEqual({ _tag: 'Left', left: { issues: [] } });
+      expect(validator).toBeCalledWith(req, secScheme);
+    });
+    it('should return a left when validation function returns a string error', () => {
+      const validator = jest.fn().mockReturnValue('this is what went wrong');
+      const secScheme = { type: 'http' } as const;
+      const requirements = requires().auth('oauth', secScheme, { validator });
+      const req = {} as express.Request;
+      const result = validateAll(requirements._effects, req);
+      expect(either.isLeft(result)).toEqual(true);
+      expect(result).toEqual({
+        _tag: 'Left',
+        left: {
+          issues: [
+            {
+              code: 'custom',
+              message: 'this is what went wrong',
+              path: ['authentication'],
+            },
+          ],
+        },
+      });
+      expect(validator).toBeCalledWith(req, secScheme);
+    });
+    it('should return a left when validation function throws an error', () => {
+      const validator = jest.fn().mockImplementation(() => {
+        throw new Error();
+      });
+      const secScheme = { type: 'http' } as const;
+      const requirements = requires().auth('oauth', secScheme, { validator });
+      const req = {} as express.Request;
+      const result = validateAll(requirements._effects, req);
+      expect(either.isLeft(result)).toEqual(true);
+      expect(result).toEqual({
+        _tag: 'Left',
+        left: {
+          issues: [],
+        },
+      });
+      expect(validator).toBeCalledWith(req, secScheme);
+    });
+    it('should return a right when all validation functions return true', () => {
+      const validator1 = jest.fn().mockReturnValue(true);
+      const validator2 = jest.fn().mockReturnValue(true);
+      const secScheme = { type: 'http' } as const;
+      const requirements = requires()
+        .auth('oauth', secScheme, { validator: validator1 })
+        .auth('another', secScheme, { validator: validator2 });
+      const req = {} as express.Request;
+      const result = validateAll(requirements._effects, req);
+      expect(either.isRight(result)).toEqual(true);
+      expect(validator1).toBeCalledWith(req, secScheme);
+      expect(validator2).toBeCalledWith(req, secScheme);
+    });
+    it('should return a left when any validation functions return false', () => {
+      const validator1 = jest.fn().mockReturnValue(true);
+      const validator2 = jest.fn().mockReturnValue(false);
+      const secScheme = { type: 'http' } as const;
+      const requirements = requires()
+        .auth('oauth', secScheme, { validator: validator1 })
+        .auth('another', secScheme, { validator: validator2 });
+      const req = {} as express.Request;
+      const result = validateAll(requirements._effects, req);
+      expect(either.isLeft(result)).toEqual(true);
+      expect(result).toEqual({
+        _tag: 'Left',
+        left: {
+          issues: [],
+        },
+      });
+      expect(validator1).toBeCalledWith(req, secScheme);
+      expect(validator2).toBeCalledWith(req, secScheme);
+    });
+    it('should return a left when any validation functions return false and other auth validator doesnt exist', () => {
+      const validator1 = jest.fn().mockReturnValue(false);
+      const secScheme = { type: 'http' } as const;
+      const requirements = requires()
+        .auth('oauth', secScheme, { validator: validator1 })
+        .auth('another', secScheme);
+      const req = {} as express.Request;
+      const result = validateAll(requirements._effects, req);
+      expect(either.isLeft(result)).toEqual(true);
+      expect(result).toEqual({
+        _tag: 'Left',
+        left: {
+          issues: [],
+        },
+      });
+      expect(validator1).toBeCalledWith(req, secScheme);
+    });
+  });
 });

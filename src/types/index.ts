@@ -6,11 +6,22 @@ import { ParsedQs } from 'qs';
 import { Requires } from './haste';
 import express, { NextFunction } from 'express';
 import { ParseInt } from './utilities';
+import { SecuritySchemeObject } from 'zod-openapi/lib-types/openapi3-ts/dist/model/openapi30';
 
 export type StatusCode = `${1 | 2 | 3 | 4 | 5}${string}`;
 
 export type BodyConfig = { contentType?: string };
 export type ResponseConfig = { contentType?: string; description?: string };
+export type AuthConfig = {
+  /**
+   * A validator function that handles auth validation.
+   * @param req The request to validate against.
+   * @param method The security scheme to validate.
+   * @returns {boolean | () => string} A literal true value when validation is successful, false or a string error when not successful
+   */
+  validator?: (req: express.Request, method: SecuritySchemeObject) => boolean | string;
+  requireScopes?: string[];
+};
 
 export type SchemaWithConfig<Schema extends ZodType, Config extends { [k in string]: string }> = {
   schema: Schema;
@@ -21,8 +32,16 @@ export type HasteResponseEffect = SchemaWithConfig<ZodSchema, ResponseConfig> & 
   status: StatusCode;
 };
 
+export type HasteAuthEffect = {
+  [name in string]: {
+    scheme: SecuritySchemeObject;
+    config: AuthConfig;
+  };
+};
+
 export type HasteEffect = {
   response?: HasteResponseEffect[];
+  auth?: HasteAuthEffect;
   body?: SchemaWithConfig<ZodSchema, BodyConfig>;
   path?: AnyZodObject;
   query?: AnyZodObject;

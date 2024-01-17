@@ -70,7 +70,7 @@ export function isObject(item: unknown): item is Record<string, unknown> {
 }
 
 /**
- * Deep merge two objects.
+ * Deep merge two objects but very specific to haste.
  * @param target
  * @param sources
  */

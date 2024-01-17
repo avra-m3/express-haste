@@ -19,7 +19,7 @@
     "esModuleInterop": true
   },
   "include": [
-    "./src/express-internal.d.ts"
+    "./src/document/express-internal.d.ts"
   ],
   "exclude": [
     "node_modules"

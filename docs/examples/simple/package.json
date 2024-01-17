@@ -17,5 +17,8 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "ts-node": "^10.9.2"
+  },
+  "overrides": {
+    "@hookform/resolvers": "^3.3.1"
   }
 }

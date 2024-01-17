@@ -1,10 +1,10 @@
 import { HasteEffect, StatusCode } from '../types';
 import { AnyZodObject, z, ZodType } from 'zod';
 import { ZodOpenApiOperationObject } from 'zod-openapi/lib-types/create/document';
-import { constant, pipe } from 'fp-ts/function';
-import { array, option } from 'fp-ts';
+import { constant, identity, pipe } from 'fp-ts/function';
+import { array, option, record } from 'fp-ts';
 import { ParameterLocation } from 'zod-openapi/lib-types/openapi3-ts/dist/model/openapi31';
-import { ZodOpenApiResponseObject } from 'zod-openapi';
+import { ZodOpenApiComponentsObject, ZodOpenApiResponseObject } from 'zod-openapi';
 import { DEFAULT_CONTENT_TYPE } from '../constants';
 import { isZodType, mergeDeep } from '../utils';
 
@@ -60,6 +60,16 @@ const mergeAndMap = (
     option.getOrElseW(() => undefined)
   );
 
+const authEnhancer: Enhancer = (effects, operation) => {
+  return pipe(
+    effects.auth,
+    option.fromNullable,
+    option.map((auth) => Object.entries(auth)),
+    option.map(array.map(([key, value]) => ({ [key]: value.config.requireScopes || [] }))),
+    option.map((newAuth) => ({ security: [...(operation.security || []), ...newAuth] })),
+    option.getOrElseW(constant({}))
+  );
+};
 const responseEnhancer: Enhancer = (effects, operation) =>
   pipe(
     effects.response,
@@ -113,6 +123,7 @@ type Enhancer = (
 ) => Partial<ZodOpenApiOperationObject>;
 export const enhancerMapping: Record<keyof HasteEffect, Enhancer> = {
   body: bodyEnhancer,
+  auth: authEnhancer,
   response: responseEnhancer,
   query: parameterEnhancer('query'),
   path: parameterEnhancer('path'),
@@ -128,3 +139,23 @@ export const enhanceAll = (
     Object.keys(effect) as (keyof HasteEffect)[],
     array.reduce({}, (result, key) => mergeDeep(result, enhancerMapping[key](effect, operation)))
   );
+
+/**
+ * At the moment this only handles auth, but we can add more component-level manipulation in the future if need be.
+ * @param effects The haste effects
+ */
+export const enhanceAllComponents = (effects: HasteEffect): ZodOpenApiComponentsObject => {
+  return pipe(
+    {
+      securitySchemes: pipe(
+        effects.auth,
+        option.fromNullable,
+        option.map((auth) => Object.entries(auth)),
+        option.map(
+          array.reduce({}, (result, [key, value]) => mergeDeep(result, { [key]: value.scheme }))
+        )
+      ),
+    },
+    record.filterMap(identity)
+  );
+};
