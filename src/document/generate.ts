@@ -18,10 +18,18 @@ export const generatePathsFromOperations = (
     record.filterMapWithIndex((path, v) =>
       pipe(
         v,
-        record.mapWithIndex((method, requirements) =>
+        record.mapWithIndex((method, values) =>
           pipe(
-            requirements._enhancer(spec?.[path]?.[method as keyof ZodOpenApiPathItemObject] || {}),
-            (enhancement) => mergeDeep({}, spec?.[path]?.[method as 'get'] || {}, enhancement)
+            values,
+            array.reduce({}, (result, requirements) =>
+              pipe(
+                requirements._enhancer(
+                  spec?.[path]?.[method as keyof ZodOpenApiPathItemObject] || {}
+                ),
+                (enhancement) =>
+                  mergeDeep(result, spec?.[path]?.[method as 'get'] || {}, enhancement)
+              )
+            )
           )
         ),
         option.fromPredicate(not(record.isEmpty))
@@ -59,7 +67,8 @@ export const generateComponentsFromOperations = (
     getRecordValues,
     array.map(getRecordValues),
     array.flatten,
-    array.map((operation) => operation._components(components)),
+    array.map(array.map((operation) => operation._components(components))),
+    array.flatten,
     array.reduce(components, mergeDeep)
   );
 

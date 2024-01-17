@@ -31,4 +31,4 @@ export interface HasteDocument {
 }
 
 export const AllPathsKey = '!all';
-export type HasteRequirementMap = { [p: string]: Record<string, Requires<HasteEffect>> };
+export type HasteRequirementMap = { [p: string]: Record<string, Requires<HasteEffect>[]> };
