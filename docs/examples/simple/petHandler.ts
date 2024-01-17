@@ -1,4 +1,4 @@
-import { z, ZodType } from 'zod';
+import { z } from 'zod';
 import { HasteRequestHandler, requires } from 'express-haste';
 import {
   AsyncCreationRequest,
@@ -9,7 +9,6 @@ import {
 } from './schemas';
 
 export const searchPetRequirements = requires()
-  .body(z.object({}))
   .query('id', PetId)
   .query('async', AsyncCreationRequest)
   .response('200', PetWithIdSchema)
