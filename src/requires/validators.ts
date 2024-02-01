@@ -51,64 +51,7 @@ const parameterValidator =
       option.getOrElseW(constant(either.right(undefined)))
     );
 
-const authValidator: Validator = (effect, req) =>
-  pipe(
-    effect.auth,
-    option.fromNullable,
-    option.map((auth) => Object.values(auth)),
-    option.map(
-      array.map((method) =>
-        pipe(
-          method.config?.validator,
-          option.fromNullable,
-          option.fold(constant(either.right(true)), (fn) =>
-            pipe(
-              either.tryCatch(
-                () => fn(req, method.scheme),
-                () => new ZodError([])
-              ),
-              either.chain(
-                either.fromPredicate(
-                  (v): v is boolean => v === true,
-                  (v) =>
-                    new ZodError(
-                      typeof v === 'string'
-                        ? [
-                            {
-                              code: 'custom',
-                              message: v,
-                              path: ['authentication'],
-                            },
-                          ]
-                        : []
-                    )
-                )
-              )
-            )
-          )
-        )
-      )
-    ),
-    option.fold(
-      constant(either.right(true)),
-      flow(
-        array.separate,
-        either.fromPredicate(
-          ({ left }) => !left.length,
-          ({ left }) => left
-        ),
-        either.mapLeft(
-          flow(
-            array.map(({ issues }) => issues),
-            array.sequence(Applicative),
-            array.flatten,
-            (issues) => new ZodError(issues)
-          )
-        ),
-        either.map(constant(true))
-      )
-    )
-  );
+const authValidator: Validator = constant(either.right(true));
 
 const locationRequestMapping: Record<ParameterLocation, keyof express.Request> = {
   path: 'params',

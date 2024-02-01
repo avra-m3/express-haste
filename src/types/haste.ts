@@ -57,8 +57,13 @@ export type ExtendEffect<
     : ZodObject<Value>;
 };
 
+export type HasteCustomErrorHandler = (
+  errors: ZodError,
+  res: express.Response,
+  next: NextFunction
+) => void;
 export type RequirementConfig = {
-  errorHandler?: (errors: ZodError, res: express.Response, next: NextFunction) => void;
+  errorHandler?: HasteCustomErrorHandler;
 };
 
 export interface Requires<Effect extends HasteEffect> extends express.RequestHandler {

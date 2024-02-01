@@ -19,7 +19,6 @@ export type AuthConfig = {
    * @param method The security scheme to validate.
    * @returns {boolean | () => string} A literal true value when validation is successful, false or a string error when not successful
    */
-  validator?: (req: express.Request, method: SecuritySchemeObject) => boolean | string;
   requireScopes?: string[];
 };
 
