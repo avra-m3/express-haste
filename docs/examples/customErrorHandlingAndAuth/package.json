@@ -1,0 +1,26 @@
+{
+  "name": "simple-haste-example",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node ./serve.ts",
+    "test:ci": "jest"
+  },
+  "dependencies": {
+    "@types/jsonwebtoken": "^9.0.5",
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.2",
+    "express-haste": "0.0.6",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2"
+  },
+  "overrides": {
+    "@hookform/resolvers": "^3.3.1"
+  }
+}
