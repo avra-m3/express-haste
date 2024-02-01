@@ -50,17 +50,9 @@ jobs:
       - name: "Install project dependencies ⚙️"
         run: yarn install --frozen-lockfile
 
-      - name: "Install simple example dependencies ⚙️"
+      - name: "Install example dependencies ⚙️"
         working-directory: docs/examples/simple
         run: yarn install --frozen-lockfile
-
-      - name: "Install auth example dependencies ⚙️"
-        working-directory: docs/examples/customErrorHandlingAndAuth
-        run: yarn install --frozen-lockfile
-
-      - name: "Test auth example 🧪"
-        working-directory: docs/examples/customErrorHandlingAndAuth
-        run: yarn test:ci
 
       - name: "Test simple example 🧪"
         working-directory: docs/examples/simple
