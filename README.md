@@ -46,25 +46,28 @@ A simple validated request in an app, looks as follows;
 import express, { json } from 'express';
 import { document } from 'express-haste';
 import cookieParser from 'cookie-parser';
-import { requiresMany } from "./requiresMany";
-import { requires, body, query, header } from "./index";
+import { requiresMany } from './requiresMany';
+import { requires, body, query, header } from './index';
 import { z } from 'zod';
 
 
 const app = express();
 
-app.post('/test', requires(
-  body(z.object({})),
-  query('someParam', z.string().default('somevalue')),
-  query('manyparam', z.string().array()),
-  header('x-my-header', z.string().uuid())
-), handler);
+app.post('/test', requires()
+    .body(z.object({}))
+    .query('someParam', z.string().default('somevalue'))
+    .query('manyparam', z.string().array())
+    .header('x-my-header', z.string().uuid())
+  , handler);
 ```
 
 #### `body(schema)`
 
+`requires().body(z.string())`
+
 Given a zod schema, validates the req.body matches that schema and will make it the required body for that request
-in the documentation. You may only provide one body, more than one will result in undefined behaviour for now.
+in the documentation. You may only provide one body, when providing many .body(), the last to be defined will be taken.
+
 
 #### `header(key, schema)`
 
@@ -73,7 +76,11 @@ Given a key and a ZodSchema, validate the header passes schema validation.
 *You should always start with z.string() here but you can use [.transform](https://zod.dev/?id=transform)*
 *and [.refine](https://zod.dev/?id=refine) to abstract validation logic.*
 
+`requires().header('x-id', z.string())`
+
 #### `cookie(key, schema)`
+
+`requires().cookie('cookie', z.string())`
 
 Given a key and a ZodSchema, validate the cookie passes schema validation, you will need
 the [cookie-parser middleware](https://expressjs.com/en/resources/middleware/cookie-parser.html)
@@ -82,7 +89,10 @@ or similar for this to work.
 *You should always start with z.string() here but you can use [.transform](https://zod.dev/?id=transform)*
 *and [.refine](https://zod.dev/?id=refine) to abstract validation logic.*
 
+
 #### `query(key, schema)`
+
+`requires().query('page', z.string().array())`
 
 Given a key and a Schema, validate a search/query parameter meets that validation, valid starting types are
 
@@ -91,10 +101,14 @@ Given a key and a Schema, validate a search/query parameter meets that validatio
 
 #### `path(key, schema)`
 
+`requires().path('id', z.string())`
+
 Given a key and a Schema, validate a path parameter listed in your path, key should take the exact same name as the
 `:name` given to the parameter
 
-#### `response(status, schema, {description})`
+#### `response(status, schema, {description, contentType})`
+
+`requires().response('200', z.object({message: z.string()}))`
 
 Given a string status code, zod schema, and optionally a description, add this response to the documentation.
 This validator will **NOT** validate the response, but will provide type checking if using `HasteRequestHandler`.
@@ -146,25 +160,25 @@ Who doesn't love having a typed application, you can add typing to your request 
 here's an example;
 
 ```typescript
-import express, { json } from "express";
-import { document } from "express-haste";
-import cookieParser from "cookie-parser";
-import { requiresMany } from "./requiresMany";
-import { requires, body, query, header, HasteRequestHandler } from "./index";
-import { z } from "zod";
+import express, { json } from 'express';
+import { document } from 'express-haste';
+import cookieParser from 'cookie-parser';
+import { requiresMany } from './requiresMany';
+import { requires, body, query, header, HasteRequestHandler } from './index';
+import { z } from 'zod';
 
 
 const app = express();
 
-const testRequirements = requires(
-  body(z.object({ param: z.string().optional() })),
-  query("someParam", z.string().default("somevalue")),
-  query("manyparam", z.string().array()),
-  path("pathid", z.string().transform(z.number().parse)),
-  response(200, z.object({
-    returnValue: z.number()
-  }))
-)
+const testRequirements = requires()
+        .body(z.object({ param: z.string().optional() }))
+        .query('someParam', z.string().default('somevalue'))
+        .query('manyparam', z.string().array())
+        .path('pathid', z.string().transform(z.number().parse))
+        .response(200, z.object({
+                  returnValue: z.number(),
+                }),
+        );
 
 const handler: HasteRequestHandler<typeof testRequirements> = (req, res) => {
   req.body; // Will be {param?: string}
@@ -176,7 +190,7 @@ const handler: HasteRequestHandler<typeof testRequirements> = (req, res) => {
   });
 };
 
-app.post("/test/:pathid", testRequirements, handler);
+app.post('/test/:pathid', testRequirements, handler);
 ```
 ### Documenting
 
@@ -187,7 +201,7 @@ You can then feed this into the openapi provider of your choice to generate docu
 
 import { document } from 'express-haste';
 //... All your routing, it's important these have been finalised before you call document.
-const spec = document(app, {
+const spec = document(app).info({
   appTitle: 'My First App',
   appVersion: '1.0.0'
 })
@@ -207,12 +221,13 @@ full end-to-end examples of how express-haste works.
 ### Roadmap
 
 * [X] Request Handler typing.
-* [ ] Improve test coverage.
+* [X] Improve test coverage (97% coverage).
 * [X] Lint and Test checking in github actions.
 * [ ] Tests for typing (it's very fragile and hard to catch all edge cases manually).
-* [ ] Explore whether typing can be made less complicated.
+* [X] Explore whether typing can be made less complicated.
 * [ ] Ability to pass many parameters into one query, header, etc function call.
   ie; `query({q1: z.string(), q2: z.string()})`.
-* [ ] Ability to customize error response when the request fails.
-* [ ] Define behaviour for when many of the same body validation schemas are provided.
-* [ ] Response validation and/or warning.
+  * This is now unblocked
+* [X] Ability to customize error response when the request fails.
+* [X] Define behaviour for when many of the same body validation schemas are provided.
+~~* [ ] Response validation and/or warning.~~

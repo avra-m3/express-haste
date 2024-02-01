@@ -2,19 +2,20 @@ import request from 'supertest';
 import * as H from '../../../src';
 import app from './index';
 import 'express-haste';
+import { response } from 'express';
 
 jest.mock('express-haste', () => H);
 
 describe('requires', () => {
   it('Should validate the request body', async () => {
-    await request(app)
+    const response = await request(app)
       .post('/pets/123')
       .send({
         type: 'fish',
         breed: 'carp',
         vaccinated: true,
       })
-      .expect({
+      expect(response.body).toEqual({
         type: 'about:blank',
         title: 'Bad request',
         detail: 'Request failed to validate',
@@ -22,12 +23,12 @@ describe('requires', () => {
           {
             type: 'https://zod.dev/error_handling?id=zodissuecode',
             code: 'invalid_type',
-            path: ['header', 'authorization'],
+            path: ['headers', 'authorization'],
             message: 'Required',
           },
         ],
       })
-      .expect(400);
+      expect(response.status).toEqual(400);
     await request(app)
       .post('/pets/123')
       .auth('admin', 'password')
@@ -66,7 +67,7 @@ describe('requires', () => {
         title: 'created',
         details: 'cat/breeds/tomcat',
       })
-      .expect(200);
+      .expect(201);
   });
 
   it('Should return a validation error when cookie is missing', async () => {
@@ -119,7 +120,7 @@ describe('requires', () => {
           {
             type: 'https://zod.dev/error_handling?id=zodissuecode',
             code: 'invalid_string',
-            path: ['path', 'id'],
+            path: ['params', 'id'],
             message: 'Must be a valid pet identifier.',
           },
         ],

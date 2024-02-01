@@ -54,6 +54,6 @@ jobs:
         working-directory: docs/examples/simple
         run: yarn install --frozen-lockfile
 
-      - name: "Test 🧪"
+      - name: "Test simple example 🧪"
         working-directory: docs/examples/simple
         run: yarn test:ci

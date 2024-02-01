@@ -1,56 +1,76 @@
 import { AnyZodObject, z, ZodSchema, ZodType } from 'zod';
 import { HasteBadRequestSchema, HasteOptionSchema } from '../schemas';
-import { ParamsDictionary, RequestHandler } from 'express-serve-static-core';
+import * as core from 'express-serve-static-core';
+import { ParamsDictionary } from 'express-serve-static-core';
 import { ParsedQs } from 'qs';
-import { HasteOperation } from './haste';
+import { Requires } from './haste';
+import express, { NextFunction } from 'express';
+import { ParseInt } from './utilities';
+import { SecuritySchemeObject } from 'zod-openapi/lib-types/openapi3-ts/dist/model/openapi30';
 
 export type StatusCode = `${1 | 2 | 3 | 4 | 5}${string}`;
-export type HasteResponseEffect = { status: StatusCode; schema: ZodSchema };
+
+export type BodyConfig = { contentType?: string };
+export type ResponseConfig = { contentType?: string; description?: string };
+export type AuthConfig = {
+  /**
+   * A validator function that handles auth validation.
+   * @param req The request to validate against.
+   * @param method The security scheme to validate.
+   * @returns {boolean | () => string} A literal true value when validation is successful, false or a string error when not successful
+   */
+  requireScopes?: string[];
+};
+
+export type SchemaWithConfig<Schema extends ZodType, Config extends { [k in string]: string }> = {
+  schema: Schema;
+  config?: Config;
+};
+
+export type HasteResponseEffect = SchemaWithConfig<ZodSchema, ResponseConfig> & {
+  status: StatusCode;
+};
+
+export type HasteAuthEffect = {
+  [name in string]: {
+    scheme: SecuritySchemeObject;
+    config: AuthConfig;
+  };
+};
 
 export type HasteEffect = {
-  body?: ZodSchema;
   response?: HasteResponseEffect[];
+  auth?: HasteAuthEffect;
+  body?: SchemaWithConfig<ZodSchema, BodyConfig>;
   path?: AnyZodObject;
   query?: AnyZodObject;
   header?: AnyZodObject;
   cookie?: AnyZodObject;
 };
 
-type RecurseInfer<T> = T extends [
-  infer I1 extends HasteResponseEffect,
-  ...infer I2 extends HasteResponseEffect[],
-]
-  ? z.infer<I1['schema']> | RecurseInfer<I2>
-  : T extends [infer I3 extends HasteResponseEffect]
-    ? z.infer<I3['schema']>
-    : never;
-
-export type HasteResponseFor<E> = E extends HasteEffect
-  ? E extends { response: infer R }
-    ? RecurseInfer<R>
-    : unknown
-  : unknown;
-
-export type HasteParamsFor<E> = E extends { [k in string]: ZodSchema }
-  ? {
-      [Key in keyof E]: z.infer<E[Key]>;
-    }
-  : ParamsDictionary;
-
-export type HasteQueryFor<E> = E extends { [k in string]: ZodSchema }
-  ? {
-      [Key in keyof E]: z.infer<E[Key]>;
-    } & ParsedQs
-  : ParsedQs;
-
-export type HasteRequestHandler<O> = O extends HasteOperation<infer E>
-  ? RequestHandler<
-      E extends { path: infer P } ? HasteParamsFor<P> : ParamsDictionary,
+export type HasteRequest<O> = O extends Requires<infer E>
+  ? express.Request<
+      E extends { path: infer P extends ZodType } ? z.infer<P> : ParamsDictionary,
       E extends { response: Array<{ schema: infer S extends ZodType }> } ? z.infer<S> : unknown,
-      E extends { body: infer B extends ZodType } ? z.infer<B> : unknown,
-      E extends { query: infer Q } ? HasteQueryFor<Q> : ParsedQs
+      E extends { body: { schema: infer B extends ZodType } } ? z.infer<B> : unknown,
+      E extends { query: infer P extends ZodType } ? z.infer<P> & Omit<ParsedQs, keyof P> : ParsedQs
     >
-  : RequestHandler;
+  : express.Request;
+
+export type HasteResponse<O> = O extends Requires<infer E>
+  ? core.Response<
+      E extends { response: Array<{ schema: infer S extends ZodType }> } ? z.infer<S> : unknown,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      any,
+      E extends { response: Array<{ status: infer S }> } ? ParseInt<S> : number
+    >
+  : express.Response;
+
+export type HasteRequestHandler<O> = (
+  request: HasteRequest<O>,
+  response: HasteResponse<O>,
+  next: NextFunction
+) => void;
 
 export type HasteOptionType = (typeof HasteOptionSchema)['_input'];
 
