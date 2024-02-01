@@ -1218,16 +1218,14 @@ expect@^29.7.0:
     jest-message-util "^29.7.0"
     jest-util "^29.7.0"
 
-express-haste@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/express-haste/-/express-haste-0.0.6.tgz#a76899286111450f9525260822288eae056f83ca"
-  integrity sha512-J13rry4GbsC7kBWNhBjbC0gYZL/fthXkm71v6W1nKUChng1It/WA0e0F3mtuGm5/PEBaafzoLUqJEYZ3BEkpqA==
+express-haste@1.0.0-canary.0:
+  version "1.0.0-canary.0"
+  resolved "https://registry.yarnpkg.com/express-haste/-/express-haste-1.0.0-canary.0.tgz#9ae7e4812885e9857294a8fe156dbf1dcb4b5a6e"
+  integrity sha512-kDrIDv9fIi70L8CtR0gYXKey/UWzVw69WPsflVBsUM+63asV+BELkfa823Jq1TTUxgesX9outV1fGSoD3mZ4MQ==
   dependencies:
     fp-ts "^2.16.1"
     zod "^3.22.4"
     zod-openapi "^2.11.0"
-  optionalDependencies:
-    swagger-ui-express "^5.0.0"
 
 express@^4.18.2:
   version "4.18.2"
@@ -2531,18 +2529,6 @@ supports-preserve-symlinks-flag@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
-
-swagger-ui-dist@>=5.0.0:
-  version "5.10.5"
-  resolved "https://registry.npmjs.org/swagger-ui-dist/-/swagger-ui-dist-5.10.5.tgz"
-  integrity sha512-Uv8E7hV/nXALQKgW86X1i58gl1O6DFg+Uq54sDwhYqucBBxj/47dLNw872TNILNlOTuPA6dRvUMGQdmlpaX8qQ==
-
-swagger-ui-express@^5.0.0:
-  version "5.0.0"
-  resolved "https://registry.npmjs.org/swagger-ui-express/-/swagger-ui-express-5.0.0.tgz"
-  integrity sha512-tsU9tODVvhyfkNSvf03E6FAk+z+5cU3lXAzMy6Pv4av2Gt2xA0++fogwC4qo19XuFf6hdxevPuVCSKFuMHJhFA==
-  dependencies:
-    swagger-ui-dist ">=5.0.0"
 
 test-exclude@^6.0.0:
   version "6.0.0"
